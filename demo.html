@@ -103,6 +103,39 @@
   .run-kpis .k .n{font-size:1.5rem;font-weight:800}.run-kpis .k .l{font-size:.75rem;color:var(--muted)}
   .foot{margin-top:26px;font-size:.8rem;color:var(--muted);text-align:center}
   .badge{display:inline-block;background:var(--good-soft);color:var(--good);font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:999px}
+  /* --- פאנל מבוסס-קו --- */
+  .lines-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .line-card{text-align:right;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s,border-color .15s}
+  .line-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .line-card .num{font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
+  .line-card .nm{font-weight:700;color:var(--accent-strong);margin-top:2px}
+  .line-card .rl{font-size:.85rem;color:var(--muted);margin-top:4px}
+  .line-card .go{margin-top:12px;display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:.82rem;padding:7px 13px;border-radius:9px}
+  .line-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .line-head .back{background:var(--surface-2);border:1px solid var(--border);color:var(--ink);font-weight:700;padding:8px 13px;border-radius:9px}
+  .line-head .info{font-weight:800;font-size:1.1rem}.line-head .info small{display:block;font-weight:600;color:var(--muted);font-size:.8rem}
+  .tabs2{display:flex;flex-wrap:wrap;gap:5px;border-bottom:2px solid var(--border);margin-bottom:18px}
+  .tabs2 button{border:0;background:transparent;color:var(--ink-soft);font-weight:700;font-size:.9rem;padding:9px 13px;border-radius:8px 8px 0 0;border-bottom:2px solid transparent;margin-bottom:-2px}
+  .tabs2 button.on{color:var(--accent-strong);border-bottom-color:var(--accent)}
+  .form-sec{border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;background:var(--surface-2)}
+  .form-sec>h4{margin:0 0 6px;font-size:.95rem;font-weight:800}
+  .radios label{display:flex;gap:8px;align-items:flex-start;font-weight:600;font-size:.88rem;margin:6px 0;cursor:pointer}
+  .radios input{width:auto;margin-top:3px}
+  .subtabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+  .subtabs button{border:1px solid var(--border);background:var(--surface);color:var(--ink-soft);font-weight:700;font-size:.8rem;padding:6px 11px;border-radius:8px}
+  .subtabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{background:var(--accent-soft);color:var(--accent-strong);font-weight:700;font-size:.8rem;padding:4px 10px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
+  .chip button{background:none;border:0;color:var(--accent-strong);cursor:pointer;font-weight:800;padding:0}
+  .send-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+  .send-row .btn{white-space:nowrap}
+  .tree{display:flex;flex-direction:column;gap:2px}
+  .tree .node{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface);font-size:.88rem}
+  .tree .node .ext{font-weight:800;font-variant-numeric:tabular-nums;min-width:26px;color:var(--accent-strong)}
+  .tree .node .desc{flex:1}
+  .tree .node select{width:auto;padding:5px 9px;font-size:.82rem}
+  .tree .node .mic{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:5px 9px;font-size:.8rem;cursor:pointer}
+  .muted-note{font-size:.82rem;color:var(--muted);margin-top:8px}
 </style>
 
 <div class="wrap">
@@ -144,17 +177,9 @@
     </div>
   </div>
 
-  <!-- ============ PANEL ============ -->
+  <!-- ============ PANEL (מבוסס-קו) ============ -->
   <div id="view-panel" hidden>
-    <div class="panel-grid">
-      <div class="card pnav">
-        <button class="on" onclick="setPane('dash',event)">לוח בקרה</button>
-        <button onclick="setPane('mik',event)">מקוואות</button>
-        <button onclick="setPane('camp',event)">קמפיינים</button>
-        <button onclick="setPane('inbox',event)">הודעות נכנסות</button>
-      </div>
-      <div class="card pane" id="pane"></div>
-    </div>
+    <div class="card pane" id="panel"></div>
   </div>
 
   <div class="foot">אב-טיפוס אינטראקטיבי · הלוגיקה (זיהוי דיבור, זמנים, קמפיינים) רצה בפועל בדפדפן · ללא חיבורי טלפוניה עדיין</div>
@@ -271,15 +296,15 @@ function drawKeypad(keys){
     return `<button ${active?'':'disabled'} onclick="press('${d}')">${d}<small>${labels[d]}</small></button>`;
   }).join('');
 }
-let curLine='main_b';
-function startCall(){const line=$('line-pick').value;curLine=line;calling=true;node=line;steps=[];
+let phoneLine='main_b';
+function startCall(){const line=$('line-pick').value;phoneLine=line;calling=true;node=line;steps=[];
   const num=line==='main_a'?'083011900':'0772222200';
   addStep(`המאזין מחייג לקו — ${num}`,'caller');addStep(TREE[line].says.replace(/<[^>]+>/g,''));renderScreen();}
 function endCall(){calling=false;node='idle';if(steps.length)addStep('השיחה נותקה.','caller','warn');renderScreen();}
 function press(d){
   if(!calling)return;
   const n=TREE[node];
-  if(!n){ if(d==='0'){addStep('הקיש 0','caller');goto(curLine);} return; }  // חזרה ממסך פעולה
+  if(!n){ if(d==='0'){addStep('הקיש 0','caller');goto(phoneLine);} return; }  // חזרה ממסך פעולה
   if(!n.keys[d])return;
   addStep(`הקיש ${d}`,'caller');
   const dest=n.keys[d];
@@ -400,71 +425,198 @@ function doOptout(){node='optout';$('scr-ctx').textContent='הסרה מהרשי�
   $('scr-extra').innerHTML=`<div class="rec-card">רשומה ברשימת ההסרה הגלובלית (חוק הספאם) — תיחסם בכל שיגור עתידי.</div>`;
   drawKeypad({'0':'main_b'});addStep('✓ הוסר מרשימת התפוצה (הסרה)','','warn');}
 
-/* ===================== פאנל ===================== */
+/* ===================== פאנל מבוסס-קו ===================== */
+const CITIES={'מודיעין עילית':['קרית ספר','גרין פארק','ברכפלד'],
+  'ירושלים':['רמות','גבעת שאול / הר נוף','בית וגן','רמת שלמה'],
+  'בית שמש':['רמב"ש א','רמב"ש ג','מרכז העיר'],'ביתר עילית':['גבעה A','גבעה B']};
+const CAMP_TYPES=['השמעת הודעה בלבד','השמעה חוזרת (הקשה 1) + אישור קבלה (הקשה 7)',
+  'שליחת ההודעה במייל (הקשה 1) + אישור (7)','השארת הודעה בתא קולי (הקשה 1)','ניתוב למענה אנושי (בתשלום נוסף)'];
+const VOICES=['קול נשי — שירה','קול גברי — אריאל','קול נשי — הדס','קול גברי — יוסף','קול נשי — טליה'];
+const EXT_TYPES=['תפריט','השמעת קבצים','שליחת הודעה קולית','ניתוב שיחה','תור','זיהוי דיבור','זמנים הלכתיים','סליקת אשראי','הסרה מרשימה','הרשמה לרשימה','חדר ועידה','כניסה לניהול'];
+const STAT={done:'הסתיים',scheduled:'מתוזמן',draft:'טיוטה',running:'פעיל'};
+
+const LINES=[
+  {id:'b',num:'0772222200',name:'קו המידע הארצי',role:'מידע · 24,608 מנויים',callerIds:['0772222200'],
+   campaigns:[{id:1,name:'עדכון כללי למנויי הקו',type:'קולי',n:24608,blocked:182,status:'draft',ctype:1}],
+   lists:[{name:'מנויים שנרשמו לקו',count:24608,zones:['כל הארץ']}],
+   tree:[{x:'1',t:'חיפוש מקווה / מענה רבני',type:'תפריט',d:0},
+     {x:'·',t:'זיהוי דיבור — הקראת רשומת מקווה',type:'זיהוי דיבור',d:1},
+     {x:'2',t:'מענה רבנים (תור + שעות פעילות)',type:'תור',d:1},
+     {x:'2',t:'תרומות (נדרים פלוס)',type:'סליקת אשראי',d:0},
+     {x:'3',t:'שיעורים והרצאות',type:'תפריט',d:0},
+     {x:'4',t:'ימי עיון',type:'תפריט',d:0},
+     {x:'5',t:'מענה אנושי',type:'ניתוב שיחה',d:0},
+     {x:'6',t:'הרשמה לקו',type:'הרשמה לרשימה',d:0},
+     {x:'7',t:'השארת הודעה → מייל',type:'שליחת הודעה קולית',d:0},
+     {x:'8',t:'הסרה מהרשימה',type:'הסרה מרשימה',d:0},
+     {x:'9',t:'זמנים הלכתיים (שקיעה / עומר)',type:'זמנים הלכתיים',d:0}]},
+  {id:'a',num:'083011900',name:'קו האיסוף והקמפיינים',role:'קמפיינים + איסוף',callerIds:['083011900'],
+   campaigns:[{id:50,name:'מודיעין עלית ערב שבת',type:'קולי',n:432,blocked:6,status:'done',ctype:1},
+     {id:51,name:'ערב שבת אזור חיוג 02',type:'קולי',n:1197,blocked:52,status:'scheduled',ctype:1},
+     {id:52,name:'תזכורת איסוף ביתר',type:'צינתוק',n:509,blocked:8,status:'draft',ctype:0}],
+   lists:[{name:'מודיעין עילית',count:439,zones:['קרית ספר','ברכפלד']},
+     {name:'אזור חיוג 02',count:1441,zones:['רמות','הר נוף','בית וגן']},
+     {name:'אזור חיוג 08',count:509,zones:['בית שמש']}],
+   tree:[{x:'1',t:'הודעות שנשלחו (לפי אזור)',type:'תפריט',d:0},
+     {x:'2',t:'תחנות איסוף (עיר → שכונה)',type:'תפריט',d:0},
+     {x:'3',t:'השארת הודעה → מייל',type:'שליחת הודעה קולית',d:0}]},
+  {id:'c',num:'049096652',name:'קו 04',role:'טרם הוגדר — לפרט',callerIds:['049096652'],
+   campaigns:[],lists:[],tree:[{x:'—',t:'הקו טרם הוגדר — נגדיר לפי הצורך',type:'תפריט',d:0}]},
+  {id:'d',num:'0799334000',name:'קו 079',role:'טרם הוגדר — לפרט',callerIds:['0799334000'],
+   campaigns:[],lists:[],tree:[{x:'—',t:'הקו טרם הוגדר — נגדיר לפי הצורך',type:'תפריט',d:0}]},
+];
+
+let curLine=null,lineTab='camp',editCamp=undefined,recTab='list',msgMode='file',indivNums=[];
+function L(){return LINES.find(l=>l.id===curLine);}
+
 function setMode(m){
   document.getElementById('view-phone').hidden=(m!=='phone');
   document.getElementById('view-panel').hidden=(m!=='panel');
   $('tab-phone').classList.toggle('on',m==='phone');$('tab-panel').classList.toggle('on',m==='panel');
   $('hint').innerHTML = m==='phone'
     ? 'כך חווה זאת <b>המאזין</b>: לחץ "התחל שיחה", ואז נווט בתפריטים בעזרת המקלדת.'
-    : 'כך <b>אתה</b> מנהל: נווט בין המסכים, צור קמפיין, והרץ אותו כדי לראות דוח מסירה חי.';
-  if(m==='panel')setPane('dash');
+    : 'כך <b>אתה</b> מנהל: בחר קו, ואז נהל אותו <b>בנפרד</b> — קמפיינים, מערכת תוכן, רשימות והגדרות משלו.';
+  if(m==='panel'){curLine=null;renderPanel();}
 }
-let paneName='dash';
-function setPane(p,ev){paneName=p;
-  document.querySelectorAll('.pnav button').forEach(b=>b.classList.remove('on'));
-  if(ev)ev.target.classList.add('on');else document.querySelector('.pnav button').classList.add('on');
-  renderPane();
+function renderPanel(){curLine?renderLine():renderLineList();}
+function renderLineList(){
+  $('panel').innerHTML=`<h2>בחר קו לניהול</h2>
+   <p class="muted-note">כל קו מנוהל בנפרד לגמרי — הגדרות, קמפיינים ותוכן משלו, ללא קשר בין קו לקו.</p>
+   <div class="lines-grid" style="margin-top:16px">
+   ${LINES.map(l=>`<button class="line-card" onclick="enterLine('${l.id}')">
+     <div class="num">${l.num}</div><div class="nm">${l.name}</div><div class="rl">${l.role}</div>
+     <span class="go">כניסה לניהול ←</span></button>`).join('')}</div>`;
 }
-function renderPane(){
-  const el=$('pane');
-  if(paneName==='dash'){el.innerHTML=`<h2>לוח בקרה</h2>
-    <div class="kpis">
-      <div class="kpi"><div class="n mono">24,608</div><div class="l">מנויים בקו הגדול</div></div>
-      <div class="kpi"><div class="n mono">${MIKVAOT.length*36}</div><div class="l">מקוואות</div></div>
-      <div class="kpi"><div class="n mono">${CAMPAIGNS.length}</div><div class="l">קמפיינים</div></div>
-      <div class="kpi"><div class="n mono">${INBOX.length}</div><div class="l">הודעות נכנסות</div></div>
-    </div>
-    <table><tr><th>#</th><th>קמפיין</th><th>סוג</th><th>מספרים</th><th>סטטוס</th></tr>
-    ${CAMPAIGNS.map(c=>`<tr><td>${c.id}</td><td>${c.name}</td><td>${c.type}</td><td class="mono">${c.n.toLocaleString()}</td>
-      <td><span class="pill ${c.status==='done'?'good':c.status==='scheduled'?'warn':'info'}">${({done:'הסתיים',scheduled:'מתוזמן',draft:'טיוטה'})[c.status]}</span></td></tr>`).join('')}</table>`;}
-  else if(paneName==='mik'){el.innerHTML=`<h2>ניהול מקוואות</h2>
-    <table><tr><th>שם</th><th>עיר</th><th>פיקוח</th><th>הנגשה</th></tr>
-    ${MIKVAOT.map(m=>`<tr><td>${m.name}</td><td>${m.city}</td>
-      <td><span class="pill ${m.sup==='supervised'?'good':'warn'}">${SUP[m.sup]}</span></td><td>${ACC[m.acc]}</td></tr>`).join('')}</table>`;}
-  else if(paneName==='camp'){el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
-      <h2 style="margin:0">קמפיינים</h2><button class="btn sm" onclick="newCampForm()">+ קמפיין חדש</button></div>
-    <div id="camp-body"></div>`;renderCampList();}
-  else if(paneName==='inbox'){el.innerHTML=`<h2>הודעות מהציבור</h2>
-    <table><tr><th>מתי</th><th>שלוחה</th><th>תמלול</th></tr>
-    ${INBOX.map(m=>`<tr><td>${m.when}</td><td>${m.ext}</td><td>${m.txt}</td></tr>`).join('')}</table>`;}
+function enterLine(id){curLine=id;lineTab='camp';editCamp=undefined;renderLine();}
+function exitLine(){curLine=null;renderPanel();}
+function setTab(t){lineTab=t;editCamp=undefined;renderLine();}
+function renderLine(){
+  const l=L();
+  const tabs=[['camp','שיגור הודעות'],['content','מערכת תוכן'],['lists','רשימות תפוצה'],['inbound','שיחות נכנסות'],['settings','הגדרות הקו']];
+  $('panel').innerHTML=`
+   <div class="line-head">
+     <button class="back" onclick="exitLine()">← כל הקווים</button>
+     <div class="info">${l.name} <small>${l.num} · ${l.role}</small></div>
+   </div>
+   <div class="tabs2">${tabs.map(([k,t])=>`<button class="${lineTab===k?'on':''}" onclick="setTab('${k}')">${t}</button>`).join('')}</div>
+   <div id="tabc"></div>`;
+  renderTab();
 }
-function renderCampList(){
-  $('camp-body').innerHTML=`<table style="margin-top:14px"><tr><th>#</th><th>שם</th><th>סוג</th><th>מספרים</th><th></th></tr>
-    ${CAMPAIGNS.map(c=>`<tr><td>${c.id}</td><td>${c.name}</td><td>${c.type}</td><td class="mono">${c.n.toLocaleString()}</td>
-      <td><button class="btn sm" onclick="runCampaign(${c.id})">הפעל ▶</button></td></tr>`).join('')}</table>
-    <div id="run-area"></div>`;
+function renderTab(){const el=$('tabc');
+  if(lineTab==='camp')return renderCampaigns(el);
+  if(lineTab==='content')return renderContent(el);
+  if(lineTab==='lists')return renderLists(el);
+  if(lineTab==='inbound')return renderInbound(el);
+  if(lineTab==='settings')return renderSettings(el);
 }
-function newCampForm(){
-  $('camp-body').innerHTML=`<div style="margin-top:8px">
-    <label>שם הקמפיין</label><input id="nc-name" placeholder="למשל: ערב שבת רמות">
-    <label>סוג</label><select id="nc-type"><option>קולי</option><option>צינתוק</option><option>SMS</option></select>
-    <label>פילוח לפי אזור</label><select id="nc-zone"><option>כל הרשימה</option><option>מודיעין עילית</option><option>ירושלים</option><option>בית שמש</option><option>ביתר</option></select>
-    <div style="margin-top:16px;display:flex;gap:8px"><button class="btn" onclick="saveCamp()">שמור</button>
-    <button class="btn sm" style="background:var(--muted)" onclick="renderCampList()">ביטול</button></div></div>`;
+
+/* --- שיגור הודעות --- */
+function renderCampaigns(el){
+  if(editCamp!==undefined)return campaignForm(el);
+  const l=L();
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
+    <h3 style="margin:0">קמפיינים · ${l.name}</h3><button class="btn sm" onclick="newCamp()">+ קמפיין חדש</button></div>
+    ${l.campaigns.length?`<table style="margin-top:12px"><tr><th>#</th><th>שם</th><th>סוג</th><th>מספרים</th><th>סטטוס</th><th>פעולות</th></tr>
+    ${l.campaigns.map(c=>`<tr><td>${c.id}</td><td>${c.name}</td><td>${c.type}</td><td class="mono">${c.n.toLocaleString()}</td>
+      <td><span class="pill ${c.status==='done'?'good':c.status==='scheduled'?'warn':'info'}">${STAT[c.status]}</span></td>
+      <td><button class="btn sm" onclick="editCampaign(${c.id})">עריכה</button>
+          <button class="btn sm" style="background:var(--good);margin-inline-start:4px" onclick="openSend(${c.id})">שליחה ▶</button></td></tr>`).join('')}</table>`
+    :`<p class="muted-note" style="margin-top:12px">אין עדיין קמפיינים בקו זה. לחץ "קמפיין חדש".</p>`}
+    <div id="send-area"></div>`;
 }
+function newCamp(){editCamp=null;indivNums=[];msgMode='file';recTab='list';renderLine();}
+function editCampaign(id){editCamp=L().campaigns.find(c=>c.id===id);indivNums=[];msgMode='file';recTab='list';renderLine();}
+function cancelCamp(){editCamp=undefined;renderLine();}
+function campaignForm(el){
+  const c=editCamp||{},l=L();
+  el.innerHTML=`<h3>${editCamp?'עריכת קמפיין':'קמפיין חדש'} · ${l.name}</h3>
+  <label>שם הקמפיין</label><input id="f-name" value="${c.name||''}" placeholder="למשל: ערב שבת אזור חיוג 02">
+  <div class="form-sec"><h4>זיהוי מציג (Caller ID)</h4>
+    <select>${l.callerIds.map(x=>`<option>${x}</option>`).join('')}</select></div>
+  <div class="form-sec"><h4>סוג הקמפיין</h4><div class="radios">
+    ${CAMP_TYPES.map((t,i)=>`<label><input type="radio" name="ctype" value="${i}" ${((c.ctype??1)==i)?'checked':''}> ${t}</label>`).join('')}
+  </div></div>
+  <div class="form-sec"><h4>הודעת הקמפיין</h4>
+    <div class="subtabs">
+      <button class="${msgMode==='file'?'on':''}" onclick="setMsg('file')">העלאת הקלטה</button>
+      <button class="${msgMode==='tts'?'on':''}" onclick="setMsg('tts')">כתיבת טקסט → קול (TTS)</button>
+    </div><div id="msg-body"></div></div>
+  <div class="form-sec"><h4>הודעה לפני ניתוב (אופציונלי)</h4>
+    <input placeholder="הודעה שתושמע אחרי שהנמען עונה, לפני ההקשה"></div>
+  <div class="form-sec"><h4>הסרה מרשימת התפוצה</h4><div class="radios">
+    <label><input type="radio" name="opt" checked> הסרה בהקשה 9 + הודעה סטנדרטית</label>
+    <label><input type="radio" name="opt"> הסרה בהקשה 9 ללא הודעה</label></div></div>
+  <div class="form-sec"><h4>הגדרות מתקדמות</h4>
+    <label>הגבלת קווים מחייגים (בו-זמנית)</label><input type="number" value="${c.maxch||12}">
+    <label>ניסיונות חוזרים (ללא מענה)</label><input type="number" value="${c.retry??1}"></div>
+  <div class="form-sec"><h4>רשימת תפוצה</h4>
+    <div class="subtabs">
+      <button class="${recTab==='list'?'on':''}" onclick="setRec('list')">רשימה קיימת</button>
+      <button class="${recTab==='file'?'on':''}" onclick="setRec('file')">העלאת Excel/CSV</button>
+      <button class="${recTab==='paste'?'on':''}" onclick="setRec('paste')">הדבקה</button>
+      <button class="${recTab==='indiv'?'on':''}" onclick="setRec('indiv')">מספרים בודדים</button>
+      <button class="${recTab==='filter'?'on':''}" onclick="setRec('filter')">פילוח עיר / שכונה</button>
+    </div><div id="rec-body"></div></div>
+  <div class="send-row">
+    <button class="btn" onclick="saveCamp()">💾 שמור</button>
+    <button class="btn sm" style="background:var(--muted)" onclick="cancelCamp()">ביטול</button></div>`;
+  renderMsg();renderRec();
+}
+function setMsg(m){msgMode=m;renderMsg();}
+function renderMsg(){
+  $('msg-body').innerHTML = msgMode==='file'
+    ? `<input type="file" accept="audio/*"><div class="muted-note">פורמטים: MP3/WAV/OGG. אורך טיפוסי ~43 שניות.</div>`
+    : `<textarea id="tts-text" style="width:100%;min-height:90px;border:1px solid var(--border);border-radius:9px;padding:10px;font:inherit;background:var(--surface);color:var(--ink)" placeholder="כתוב כאן את ההודעה, והמערכת תהפוך אותה לקול..."></textarea>
+       <label>בחירת קול</label><select id="tts-voice">${VOICES.map(v=>`<option>${v}</option>`).join('')}</select>
+       <div class="send-row" style="margin-top:8px"><button class="btn sm" type="button" onclick="ttsPreview()">🔊 האזן לדוגמה</button><span id="tts-note" class="muted-note"></span></div>`;
+}
+function ttsPreview(){$('tts-note').textContent=`▶ משמיע בקול "${$('tts-voice').value}" (הדגמה)`;}
+function setRec(t){recTab=t;renderRec();}
+function renderRec(){
+  const l=L(),b=$('rec-body');
+  if(recTab==='list')b.innerHTML=`<select>${l.lists.length?l.lists.map(x=>`<option>${x.name} (${x.count.toLocaleString()} מספרים)</option>`).join(''):'<option>אין רשימות בקו זה</option>'}</select>`;
+  else if(recTab==='file')b.innerHTML=`<input type="file" accept=".xlsx,.csv"><div class="muted-note">עמודות: טלפון · שם · מידע נוסף · אזור. מצבי הוספה: עדכון / החלפה / הסרה.</div>`;
+  else if(recTab==='paste')b.innerHTML=`<textarea style="width:100%;min-height:80px;border:1px solid var(--border);border-radius:9px;padding:10px;font:inherit;background:var(--surface);color:var(--ink)" placeholder="הדבק מספרים (שורה לכל מספר, או מופרד בפסיקים)"></textarea>`;
+  else if(recTab==='indiv')b.innerHTML=`<div class="send-row"><input id="ind-num" placeholder="מספר טלפון" style="max-width:180px"><button class="btn sm" type="button" onclick="addNum()">הוסף</button></div>
+    <div class="chips" id="ind-chips">${indivNums.map((n,i)=>`<span class="chip">${n}<button type="button" onclick="rmNum(${i})">✕</button></span>`).join('')}</div>`;
+  else if(recTab==='filter'){const cities=Object.keys(CITIES);const cur=($('f-city')&&$('f-city').value)||cities[0];
+    b.innerHTML=`<label>עיר</label><select id="f-city" onchange="renderRec()">${cities.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('')}</select>
+    <label>שכונה</label><select><option>כל השכונות</option>${(CITIES[cur]||[]).map(h=>`<option>${h}</option>`).join('')}</select>
+    <div class="muted-note">בחירת שכונה מצמצמת את הרשימה לאזור הזה בלבד.</div>`;}
+}
+function addNum(){const v=$('ind-num').value.trim();if(v){indivNums.push(v);renderRec();}}
+function rmNum(i){indivNums.splice(i,1);renderRec();}
 function saveCamp(){
-  const name=$('nc-name').value.trim()||'קמפיין ללא שם';
-  CAMPAIGNS.unshift({id:Math.max(...CAMPAIGNS.map(c=>c.id))+1,name,type:$('nc-type').value,
-    n:200+Math.floor(Math.random()*900),blocked:Math.floor(Math.random()*20),status:'draft'});
-  renderCampList();
+  const l=L(),name=($('f-name').value||'').trim()||'קמפיין ללא שם';
+  if(editCamp){editCamp.name=name;}
+  else l.campaigns.unshift({id:Math.max(0,...l.campaigns.map(c=>c.id))+1,name,type:'קולי',
+    n:200+Math.floor(Math.random()*900),blocked:Math.floor(Math.random()*20),status:'draft',ctype:1});
+  editCamp=undefined;indivNums=[];renderLine();
 }
-/* הרצת קמפיין — משתמש בלוגיקה של engine.py (סינון + answer-rate + retry) */
-function runCampaign(id){
-  const c=CAMPAIGNS.find(x=>x.id===id);const total=c.n,optout=c.blocked;
-  const target=total-optout;let done=0,answered=0,noans=0,removed=0;
-  const area=$('run-area');
-  area.innerHTML=`<div class="card pane" style="margin-top:14px;box-shadow:none;border-color:var(--accent)">
+
+/* --- שליחה: בדיקה / מיידית / תזמון --- */
+function openSend(id){
+  const c=L().campaigns.find(x=>x.id===id);
+  $('send-area').innerHTML=`<div class="form-sec" style="margin-top:16px;border-color:var(--accent)">
+    <h4>שליחת "${c.name}"</h4>
+    <div class="send-row"><input id="test-num" placeholder="מספר לבדיקה" style="max-width:170px">
+      <button class="btn sm" type="button" onclick="sendTest(${id})">🧪 שלח בדיקה</button></div>
+    <div class="send-row" style="margin-top:10px"><button class="btn" type="button" onclick="runDelivery(${id})">▶ שליחה מיידית</button></div>
+    <div class="send-row" style="margin-top:10px"><input id="sched-dt" type="datetime-local" style="max-width:230px">
+      <button class="btn sm" type="button" onclick="schedule(${id})">🕒 תזמן שליחה</button></div>
+    <div id="send-status"></div><div id="run-area"></div></div>`;
+}
+function sendTest(id){const n=$('test-num').value.trim();
+  $('send-status').innerHTML=n?`<div class="badge" style="margin-top:10px">🧪 נשלחה שיחת בדיקה ל-${n} — כך תישמע ההודעה לנמען.</div>`:'';}
+function schedule(id){const dt=$('sched-dt').value;if(!dt)return;
+  const c=L().campaigns.find(x=>x.id===id);c.status='scheduled';
+  $('send-status').innerHTML=`<div class="badge" style="margin-top:10px">🕒 הקמפיין תוזמן ל-${dt.replace('T',' ')}.</div>`;
+  setTimeout(renderLine,900);
+}
+function runDelivery(id){
+  const c=L().campaigns.find(x=>x.id===id),total=c.n,optout=c.blocked,target=total-optout;
+  let done=0,answered=0,noans=0,removed=0;
+  $('run-area').innerHTML=`<div class="form-sec" style="margin-top:12px;border-color:var(--accent)">
     <b>מריץ: ${c.name}</b> — ${target.toLocaleString()} נמענים (אחרי סינון ${optout} הסרות)
     <div class="progress"><div class="fill" id="pf"></div></div>
     <div class="run-kpis">
@@ -472,9 +624,9 @@ function runCampaign(id){
       <div class="k"><div class="n mono" id="k-n" style="color:var(--warn)">0</div><div class="l">לא נענה</div></div>
       <div class="k"><div class="n mono" id="k-r" style="color:var(--alert)">0</div><div class="l">הסרות</div></div>
     </div><div id="run-done"></div></div>`;
-  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  const batch=Math.max(1,Math.round(target/40));
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,batch=Math.max(1,Math.round(target/40));
   const tick=()=>{
+    if(!$('pf'))return;   // עצור אם עברו מסך באמצע הרצה
     for(let i=0;i<batch&&done<target;i++){done++;
       if(Math.random()<0.62){answered++;if(Math.random()<0.03)removed++;}else noans++;}
     $('pf').style.width=(done/target*100)+'%';
@@ -483,6 +635,51 @@ function runCampaign(id){
     else{c.status='done';$('run-done').innerHTML=`<div style="margin-top:12px" class="badge">✓ הקמפיין הסתיים · נמסר ${answered.toLocaleString()} מתוך ${target.toLocaleString()} (${(answered/target*100|0)}%)</div>`;}
   };
   tick();
+}
+
+/* --- מערכת תוכן (עץ שלוחות) --- */
+function renderContent(el){
+  const l=L();
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
+    <h3 style="margin:0">מערכת תוכן — עץ השלוחות</h3><button class="btn sm" type="button" onclick="alert('הוספת שלוחה — פעיל בגרסה המלאה')">+ הוסף שלוחה</button></div>
+    <p class="muted-note">כל שלוחה: מספר · תיאור · סוג · הקלטה. משתנה מקו לקו (כאן: ${l.name}).</p>
+    <div class="tree" style="margin-top:12px">
+    ${l.tree.map(n=>`<div class="node" style="margin-inline-start:${n.d*22}px">
+      <span class="ext">${n.x}</span><span class="desc">${n.t}</span>
+      <select>${EXT_TYPES.map(t=>`<option ${t===n.type?'selected':''}>${t}</option>`).join('')}</select>
+      <button class="mic" type="button">🎙 הקלטה</button></div>`).join('')}
+    </div>`;
+}
+
+/* --- רשימות תפוצה --- */
+function renderLists(el){
+  const l=L();
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
+    <h3 style="margin:0">רשימות תפוצה</h3><button class="btn sm" type="button" onclick="alert('העלאה/ייבוא — פעיל בגרסה המלאה')">+ רשימה / ייבוא</button></div>
+    <p class="muted-note">מקורות: העלאת Excel/CSV · הדבקה · מספרים בודדים · רישום עצמי מהקו · ייבוא חד-פעמי מימות.</p>
+    ${l.lists.length?`<table style="margin-top:12px"><tr><th>שם הרשימה</th><th>מספרים</th><th>אזורים</th></tr>
+    ${l.lists.map(x=>`<tr><td>${x.name}</td><td class="mono">${x.count.toLocaleString()}</td><td>${x.zones.join(' · ')}</td></tr>`).join('')}</table>`
+    :`<p class="muted-note" style="margin-top:12px">אין רשימות בקו זה.</p>`}`;
+}
+
+/* --- שיחות נכנסות --- */
+function renderInbound(el){
+  el.innerHTML=`<h3>שיחות נכנסות / הודעות מהציבור</h3>
+   <table style="margin-top:12px"><tr><th>מתי</th><th>שלוחה</th><th>תמלול</th></tr>
+   ${INBOX.map(m=>`<tr><td>${m.when}</td><td>${m.ext}</td><td>${m.txt}</td></tr>`).join('')}</table>`;
+}
+
+/* --- הגדרות הקו --- */
+function renderSettings(el){
+  const l=L();
+  el.innerHTML=`<h3>הגדרות הקו</h3>
+   <div class="form-sec"><h4>כללי</h4>
+     <label>שם הקו</label><input value="${l.name}">
+     <label>מספר המערכת</label><input value="${l.num}" readonly></div>
+   <div class="form-sec"><h4>שעות מענה אנושי</h4>
+     <label>א׳–ה׳</label><input value="07:00-23:00">
+     <label>ערב שבת</label><input value="07:00-18:45"></div>
+   <p class="muted-note">ההגדרות נפרדות לכל קו — משתנות מאחד לשני.</p>`;
 }
 
 /* init */
