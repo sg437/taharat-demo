@@ -1,0 +1,399 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0e7c86"></head><body>
+<title>מערכת טלפוניה עצמאית — תיק הקמה</title>
+<style>
+  :root{
+    --bg:#eaf1f1; --surface:#ffffff; --surface-2:#f4f9f8;
+    --ink:#10242b; --ink-soft:#3d555c; --muted:#6a8087; --border:#d9e6e5;
+    --accent:#0e7c86; --accent-strong:#0a5f68; --accent-soft:#d6eceb;
+    --brass:#9c6f2c; --brass-soft:#f0e6d2;
+    --good:#2c7a52; --good-soft:#d7ecdf;
+    --warn:#a9761f; --warn-soft:#f4e8ce;
+    --alert:#b0442c; --alert-soft:#f4ddd5;
+    --shadow:0 1px 2px rgba(16,36,43,.06),0 8px 24px rgba(16,36,43,.06);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#081317; --surface:#0f2129; --surface-2:#16303a;
+      --ink:#e9f4f4; --ink-soft:#b2c8cc; --muted:#7d979d; --border:#22404a;
+      --accent:#3bb2bd; --accent-strong:#5cc9d3; --accent-soft:#10333c;
+      --brass:#cc9c56; --brass-soft:#2c2415;
+      --good:#54b888; --good-soft:#123527;
+      --warn:#d5a149; --warn-soft:#332813;
+      --alert:#df6f59; --alert-soft:#38180f;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#eaf1f1; --surface:#ffffff; --surface-2:#f4f9f8;
+    --ink:#10242b; --ink-soft:#3d555c; --muted:#6a8087; --border:#d9e6e5;
+    --accent:#0e7c86; --accent-strong:#0a5f68; --accent-soft:#d6eceb;
+    --brass:#9c6f2c; --brass-soft:#f0e6d2;
+    --good:#2c7a52; --good-soft:#d7ecdf;
+    --warn:#a9761f; --warn-soft:#f4e8ce;
+    --alert:#b0442c; --alert-soft:#f4ddd5;
+    --shadow:0 1px 2px rgba(16,36,43,.06),0 8px 24px rgba(16,36,43,.06);
+  }
+  :root[data-theme="dark"]{
+    --bg:#081317; --surface:#0f2129; --surface-2:#16303a;
+    --ink:#e9f4f4; --ink-soft:#b2c8cc; --muted:#7d979d; --border:#22404a;
+    --accent:#3bb2bd; --accent-strong:#5cc9d3; --accent-soft:#10333c;
+    --brass:#cc9c56; --brass-soft:#2c2415;
+    --good:#54b888; --good-soft:#123527;
+    --warn:#d5a149; --warn-soft:#332813;
+    --alert:#df6f59; --alert-soft:#38180f;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    direction:rtl;
+    font-family:"Assistant","Heebo","Rubik","Segoe UI","Arial Hebrew","Alef",system-ui,-apple-system,"Noto Sans Hebrew",sans-serif;
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    font-variant-numeric:tabular-nums;
+  }
+  .wrap{max-width:1120px; margin:0 auto; padding:clamp(18px,4vw,44px) clamp(16px,4vw,40px) 72px}
+  section{margin-top:clamp(34px,5vw,60px)}
+  h1,h2,h3{text-wrap:balance; margin:0; line-height:1.2}
+
+  .eyebrow{font-size:.74rem; letter-spacing:.14em; font-weight:700; color:var(--accent); text-transform:uppercase}
+  .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:20px; flex-wrap:wrap}
+  .sec-head h2{font-size:clamp(1.3rem,2.5vw,1.7rem); font-weight:800; letter-spacing:-.01em}
+  .sec-head .note{font-size:.9rem; color:var(--muted)}
+  .rule{height:1px; background:var(--border); border:0; margin:0}
+
+  /* HERO */
+  .hero{
+    position:relative; overflow:hidden; border-radius:20px;
+    background:
+      radial-gradient(120% 140% at 88% -20%, color-mix(in srgb,var(--accent) 26%, transparent), transparent 60%),
+      linear-gradient(200deg, var(--surface-2), var(--surface));
+    border:1px solid var(--border);
+    padding:clamp(26px,4.5vw,50px);
+    box-shadow:var(--shadow);
+  }
+  .hero::after{
+    content:""; position:absolute; inset-block:-40% -10%; inset-inline-start:-8%;
+    width:52%; pointer-events:none; opacity:.5;
+    background:radial-gradient(closest-side, color-mix(in srgb,var(--accent) 16%, transparent), transparent 72%);
+  }
+  .hero-inner{position:relative; z-index:1; max-width:none}
+  .hero h1{font-size:clamp(1.7rem,4.4vw,2.9rem); font-weight:800; letter-spacing:-.02em; margin:12px 0 0}
+  .hero .lede{margin:14px 0 0; font-size:clamp(1rem,1.7vw,1.18rem); color:var(--ink-soft); max-width:56ch}
+  .hero .org{font-size:.9rem; color:var(--muted); margin-top:22px}
+  .hero .org b{color:var(--ink-soft); font-weight:700}
+
+  .status{
+    display:inline-flex; align-items:center; gap:9px; margin-top:22px;
+    background:var(--good-soft); color:var(--good);
+    border:1px solid color-mix(in srgb,var(--good) 30%, transparent);
+    padding:7px 14px; border-radius:999px; font-weight:700; font-size:.86rem;
+  }
+  .status .dot{width:9px; height:9px; border-radius:50%; background:var(--good); box-shadow:0 0 0 4px color-mix(in srgb,var(--good) 22%, transparent)}
+
+  /* KPI */
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:14px; margin-top:20px}
+  .kpi{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 18px 16px; box-shadow:var(--shadow); position:relative}
+  .kpi .k-label{font-size:.8rem; color:var(--muted); font-weight:600}
+  .kpi .k-val{font-size:clamp(1.5rem,3vw,2rem); font-weight:800; letter-spacing:-.02em; margin-top:6px; line-height:1.05}
+  .kpi .k-val small{font-size:.62em; font-weight:700; color:var(--ink-soft)}
+  .kpi .k-sub{font-size:.78rem; color:var(--muted); margin-top:5px}
+  .kpi .k-accent{color:var(--accent)}
+  .kpi .k-good{color:var(--good)}
+
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow)}
+
+  /* COST */
+  .cost-grid{display:grid; grid-template-columns:1.3fr .9fr; gap:16px}
+  @media(max-width:720px){.cost-grid{grid-template-columns:1fr}}
+  .cost-bars{padding:22px 24px}
+  .barrow{margin-top:18px}
+  .barrow:first-child{margin-top:0}
+  .barrow .bl{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px}
+  .barrow .bl .name{font-weight:700}
+  .barrow .bl .amt{font-weight:800; font-size:1.05rem}
+  .track{height:16px; background:var(--surface-2); border-radius:999px; overflow:hidden; border:1px solid var(--border)}
+  .fill{height:100%; border-radius:999px}
+  .fill.old{width:100%; background:linear-gradient(90deg,var(--alert),color-mix(in srgb,var(--alert) 70%,#000))}
+  .fill.new{width:39%; background:linear-gradient(90deg,var(--accent),var(--accent-strong))}
+  .save{background:linear-gradient(200deg,var(--accent-soft),var(--surface)); border-color:color-mix(in srgb,var(--accent) 26%, transparent);
+        padding:22px; display:flex; flex-direction:column; justify-content:center; text-align:center}
+  .save .big{font-size:clamp(2rem,5vw,2.7rem); font-weight:800; color:var(--accent-strong); letter-spacing:-.02em; line-height:1}
+  .save .cap{font-size:.85rem; color:var(--ink-soft); margin-top:8px}
+  .save .yr{margin-top:14px; font-size:.9rem; color:var(--muted)}
+  .save .yr b{color:var(--good); font-weight:800}
+
+  /* SYSTEMS */
+  .sys-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px}
+  .sys{padding:18px 18px 16px; position:relative; display:flex; flex-direction:column; gap:6px}
+  .sys .num{font-size:1.28rem; font-weight:800; letter-spacing:-.01em; font-feature-settings:"tnum"}
+  .sys .tag{position:absolute; inset-inline-start:16px; inset-block-start:16px; font-size:.7rem; font-weight:800; color:var(--muted); letter-spacing:.08em}
+  .sys .role{font-size:.9rem; color:var(--ink-soft); margin-top:2px}
+  .sys .meta{font-size:.8rem; color:var(--muted); margin-top:auto; padding-top:8px}
+  .pill{display:inline-flex; align-items:center; gap:6px; font-size:.76rem; font-weight:700; padding:4px 10px; border-radius:999px; width:max-content}
+  .pill.ok{background:var(--good-soft); color:var(--good)}
+  .pill.warn{background:var(--warn-soft); color:var(--warn)}
+  .pill.wait{background:var(--surface-2); color:var(--muted); border:1px solid var(--border)}
+  .pill.clock{background:var(--alert-soft); color:var(--alert)}
+
+  /* WAVES */
+  .waves{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+  @media(max-width:820px){.waves{grid-template-columns:1fr}}
+  .wave{padding:20px; display:flex; flex-direction:column}
+  .wave .wtop{display:flex; align-items:center; gap:10px; margin-bottom:4px}
+  .wave .wnum{width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-weight:800; font-size:.9rem; color:#fff; flex:0 0 auto}
+  .wave.w1 .wnum{background:var(--accent)}
+  .wave.w2 .wnum{background:var(--brass)}
+  .wave.w3 .wnum{background:var(--muted)}
+  .wave h3{font-size:1.05rem; font-weight:800}
+  .wave .wsub{font-size:.82rem; color:var(--muted); margin:2px 0 14px}
+  .chips{display:flex; flex-wrap:wrap; gap:7px}
+  .chip{font-size:.8rem; font-weight:600; padding:5px 11px; border-radius:8px; background:var(--surface-2); border:1px solid var(--border); color:var(--ink-soft)}
+  .wave.w1 .chip{background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 22%,transparent); color:color-mix(in srgb,var(--accent-strong) 90%,var(--ink))}
+  .wave.w1{border-color:color-mix(in srgb,var(--accent) 34%,var(--border))}
+
+  /* MIGRATION */
+  .mig{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  @media(max-width:720px){.mig{grid-template-columns:1fr}}
+  .panel{padding:20px 22px}
+  .panel h3{font-size:1.05rem; font-weight:800; margin-bottom:12px}
+  .flow{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-weight:700}
+  .flow .box{background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; text-align:center; font-size:.9rem}
+  .flow .box.uni{background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 30%,transparent); color:var(--accent-strong)}
+  .flow .arr{color:var(--accent); font-weight:800}
+  .warnbox{display:flex; gap:12px; align-items:flex-start; background:var(--alert-soft); border:1px solid color-mix(in srgb,var(--alert) 28%,transparent); border-radius:12px; padding:14px 16px; margin-top:16px}
+  .warnbox .ic{font-size:1.2rem; line-height:1}
+  .warnbox .t{font-size:.88rem; color:var(--ink)}
+  .warnbox .t b{color:var(--alert)}
+
+  ul.clean{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
+  ul.clean li{display:flex; gap:10px; font-size:.92rem; color:var(--ink-soft)}
+  ul.clean li::before{content:"✓"; color:var(--good); font-weight:800; flex:0 0 auto}
+
+  /* STEPS */
+  .steps{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; counter-reset:st}
+  .step{padding:20px 20px 18px; position:relative}
+  .step .n{counter-increment:st; font-size:.78rem; font-weight:800; color:var(--accent); letter-spacing:.1em}
+  .step .n::before{content:"0" counter(st)}
+  .step h3{font-size:1rem; font-weight:800; margin:8px 0 6px}
+  .step p{margin:0; font-size:.86rem; color:var(--muted)}
+  .step .when{margin-top:10px; font-size:.76rem; font-weight:700; color:var(--brass)}
+
+  footer{margin-top:52px; padding-top:20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; font-size:.82rem; color:var(--muted)}
+  footer b{color:var(--ink-soft)}
+
+  @media(prefers-reduced-motion:no-preference){
+    .reveal{opacity:0; transform:translateY(12px); animation:rise .6s cubic-bezier(.2,.7,.3,1) forwards}
+    .kpi{animation-delay:calc(var(--i,0)*60ms)}
+    @keyframes rise{to{opacity:1; transform:none}}
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="hero reveal">
+    <div class="hero-inner">
+      <div class="eyebrow">תיק הקמה · טהרת המשפחה</div>
+      <h1>מערכת טלפוניה עצמאית</h1>
+      <p class="lede">מרכזייה עצמאית (Asterisk / FreePBX) שמחליפה את השירות בימות המשיח — קווי מידע, זיהוי דיבור, שיגור קמפיינים, תרומות וזמנים הלכתיים — תחת ניהול אחד ובעלות שברירית.</p>
+      <div class="status"><span class="dot"></span> שכבת התוכנה נבנתה · מוכנים לחיבורים</div>
+      <div class="org">גילוי מלא · <b>16 מסמכים</b> · <b>9 מודולים בנויים</b> · תמוז תשפ"ו</div>
+    </div>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi reveal" style="--i:1"><div class="k-label">חיסכון חודשי</div><div class="k-val k-good">~700 <small>₪</small></div><div class="k-sub">1,150 ₪ ← ~450 ₪</div></div>
+    <div class="kpi reveal" style="--i:2"><div class="k-label">ערוצים נדרשים</div><div class="k-val k-accent">15</div><div class="k-sub">מבוסס נתוני אמת</div></div>
+    <div class="kpi reveal" style="--i:3"><div class="k-label">מערכות לאיחוד</div><div class="k-val">4 <small>→ 1</small></div><div class="k-sub">מרכזייה אחת</div></div>
+    <div class="kpi reveal" style="--i:4"><div class="k-label">מנויים בקו הגדול</div><div class="k-val">24,608</div><div class="k-sub">קו המידע הראשי</div></div>
+    <div class="kpi reveal" style="--i:5"><div class="k-label">דקות נכנסות / חודש</div><div class="k-val">~10,600</div><div class="k-sub">שני קווי המידע</div></div>
+  </div>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">עלויות</span><h2>מה זה חוסך</h2><span class="note">אומדן חודשי, לפני מע"מ</span></div>
+    <div class="cost-grid">
+      <div class="card cost-bars">
+        <div class="barrow">
+          <div class="bl"><span class="name">היום — ימות המשיח</span><span class="amt" style="color:var(--alert)">~1,150 ₪</span></div>
+          <div class="track"><div class="fill old"></div></div>
+        </div>
+        <div class="barrow">
+          <div class="bl"><span class="name">מערכת עצמאית</span><span class="amt" style="color:var(--accent)">~450 ₪</span></div>
+          <div class="track"><div class="fill new"></div></div>
+        </div>
+        <hr class="rule" style="margin:22px 0 16px">
+        <ul class="clean">
+          <li>דקות בחיוב לשנייה (1/1) — חוסך עד 33% מול חיוב לדקה</li>
+          <li>אפס פרסומות — במקום 350 ₪/חודש לביטולן</li>
+          <li>השרת הקיים מחליף את דמי הפלטפורמה</li>
+        </ul>
+      </div>
+      <div class="card save">
+        <div class="big">~8,400 ₪</div>
+        <div class="cap">חיסכון שנתי משוער</div>
+        <div class="yr">ההקמה היא בעיקר זמן פיתוח — <b>לא תשלום חודשי</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">מיפוי</span><h2>ארבע המערכות בימות</h2><span class="note">מתאחדות למרכזייה אחת</span></div>
+    <div class="sys-grid">
+      <div class="card sys">
+        <span class="tag">מערכת A</span>
+        <span class="num">083 011900</span>
+        <span class="role">שיגור קמפיינים + קווי איסוף</span>
+        <span class="pill warn">⚠ ניוד מורכב (083)</span>
+        <span class="meta">יחידות בתוקף עד 12/2027</span>
+      </div>
+      <div class="card sys">
+        <span class="tag">מערכת B</span>
+        <span class="num">077 2222200</span>
+        <span class="role">קו המידע הגדול · 24,608 מנויים</span>
+        <span class="pill ok">✓ בר-ניוד (077)</span>
+        <span class="meta"><span class="pill clock" style="margin-top:2px">⏰ יחידות עד 26/09/2026</span></span>
+      </div>
+      <div class="card sys">
+        <span class="tag">מערכת C</span>
+        <span class="num">049 096652</span>
+        <span class="role">טרם נבדק — לברר תפקיד</span>
+        <span class="pill ok">✓ בר-ניוד (04)</span>
+        <span class="meta">מספר גאוגרפי</span>
+      </div>
+      <div class="card sys">
+        <span class="tag">מערכת D</span>
+        <span class="num">079 9334000</span>
+        <span class="role">טרם נבדק — לברר תפקיד</span>
+        <span class="pill ok">✓ בר-ניוד (079)</span>
+        <span class="meta">מספר VoIP</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">מפת המימוש</span><h2>שלושה גלים</h2><span class="note">כל יכולת בימות → מקבילה ב-FreePBX</span></div>
+    <div class="waves">
+      <div class="card wave w1">
+        <div class="wtop"><span class="wnum">1</span><h3>ליבה</h3></div>
+        <p class="wsub">מחליף את ימות במלואו</p>
+        <div class="chips">
+          <span class="chip">עצי IVR (עד 4 רמות)</span>
+          <span class="chip">זיהוי דיבור למקוואות</span>
+          <span class="chip">תור רבנים + שעות</span>
+          <span class="chip">ניתוב אישי</span>
+          <span class="chip">קמפיינים: קולי · צינתוק · SMS</span>
+          <span class="chip">פילוח · הסרה · תזמון</span>
+          <span class="chip">הודעה → מייל</span>
+          <span class="chip">תרומות (נדרים פלוס)</span>
+          <span class="chip">זמני היום בהלכה</span>
+          <span class="chip">TTS</span>
+          <span class="chip">שיעורים · ימי עיון</span>
+          <span class="chip">אבטחה + פאנל</span>
+        </div>
+      </div>
+      <div class="card wave w2">
+        <div class="wtop"><span class="wnum">2</span><h3>AI ושכלול</h3></div>
+        <p class="wsub">מיד אחרי שהליבה יציבה</p>
+        <div class="chips">
+          <span class="chip">מענה קולי חכם (AI Bot)</span>
+          <span class="chip">תרומות ב-AI</span>
+          <span class="chip">תמלול הודעות</span>
+          <span class="chip">סטטיסטיקות ודירוג</span>
+          <span class="chip">תזכורת ספירת העומר</span>
+          <span class="chip">התראות מתקדמות</span>
+        </div>
+      </div>
+      <div class="card wave w3">
+        <div class="wtop"><span class="wnum">3</span><h3>עתידי</h3></div>
+        <p class="wsub">לפי צורך ושימוש</p>
+        <div class="chips">
+          <span class="chip">פקס</span>
+          <span class="chip">חדר ועידה</span>
+          <span class="chip">נקודות ודרגות</span>
+          <span class="chip">מכירת מקומות</span>
+          <span class="chip">Multi-Tenant</span>
+          <span class="chip">וואטסאפ</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">בנייה</span><h2>מצב הבנייה — 9 מודולים</h2><span class="note">שכבת התוכנה נבנתה</span></div>
+    <div class="sys-grid">
+      <div class="card sys"><span class="num" style="font-size:1rem">יסוד + התקנה</span><span class="role">install.sh · FreePBX 17</span><span class="pill ok">✓ מוכן</span></div>
+      <div class="card sys"><span class="num" style="font-size:1rem">מודל נתונים</span><span class="role">schema.sql · כל השדות</span><span class="pill ok">✓ מוכן</span></div>
+      <div class="card sys"><span class="num" style="font-size:1rem">עצי IVR</span><span class="role">dialplan · משוחזר מימות</span><span class="pill ok">✓ מוכן</span></div>
+      <div class="card sys"><span class="num" style="font-size:1rem">מנוע קמפיינים</span><span class="role">ARI · בקרת קצב · retry</span><span class="pill good">✓ רץ ונבדק</span></div>
+      <div class="card sys"><span class="num" style="font-size:1rem">זיהוי דיבור</span><span class="role">נרמול עברי · רשימה סגורה</span><span class="pill good">✓ רץ ונבדק</span></div>
+      <div class="card sys"><span class="num" style="font-size:1rem">זמנים הלכתיים</span><span class="role">שקיעה · ספירת העומר</span><span class="pill good">✓ רץ ונבדק</span></div>
+      <div class="card sys"><span class="num" style="font-size:1rem">סליקת תרומות</span><span class="role">נדרים פלוס · PCI</span><span class="pill ok">✓ מוכן</span></div>
+      <div class="card sys"><span class="num" style="font-size:1rem">פאנל ניהול</span><span class="role">Flask · עברית RTL</span><span class="pill good">✓ רץ ונבדק</span></div>
+      <div class="card sys"><span class="num" style="font-size:1rem">תפעול</span><span class="role">הקשחה · גיבוי · ניטור</span><span class="pill ok">✓ מוכן</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">מעבר</span><h2>ניוד ואיחוד</h2></div>
+    <div class="mig">
+      <div class="card panel">
+        <h3>מרכזייה אחת במקום ארבע</h3>
+        <div class="flow">
+          <span class="box">A</span><span class="box">B</span><span class="box">C</span><span class="box">D</span>
+          <span class="arr">←</span>
+          <span class="box uni">FreePBX מאוחדת</span>
+        </div>
+        <p style="font-size:.9rem;color:var(--ink-soft);margin:14px 0 0">3 מתוך 4 המספרים (077 · 079 · 04) ברי-ניוד — כולל הקו הגדול. המנויים לא ירגישו שינוי. רק ה-083 מורכב, ושם יש פתרון הפניה נוח.</p>
+      </div>
+      <div class="card panel">
+        <h3>נקודות תשומת לב</h3>
+        <div class="warnbox">
+          <span class="ic">⏰</span>
+          <span class="t"><b>מערכת B</b> — היחידות נגמרות ב-26/09/2026. לחדש יחידות בימות בינתיים, או לתעדף את ניוד הקו הגדול.</span>
+        </div>
+        <ul class="clean" style="margin-top:14px">
+          <li>חברת הסליקה כבר ידועה — <b style="color:var(--ink-soft)">נדרים פלוס</b>, עם API</li>
+          <li>איכות שיחה G.711 · אבטחה מלאה מול חיוג לחו"ל</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">הלאה</span><h2>הצעדים הבאים</h2></div>
+    <div class="steps">
+      <div class="card step">
+        <div class="n"></div>
+        <h3>פנייה לספקי SIP</h3>
+        <p>3 הצעות מחיר, כולל בקשת ניוד 077 · 079 · 04.</p>
+        <div class="when">אפשר כבר עכשיו</div>
+      </div>
+      <div class="card step">
+        <div class="n"></div>
+        <h3>הדלקת השרת</h3>
+        <p>הפעלה ותיעוד מפרט: CPU · RAM · דיסק · IP קבוע.</p>
+        <div class="when">שרת מקומי קיים</div>
+      </div>
+      <div class="card step">
+        <div class="n"></div>
+        <h3>בירורים</h3>
+        <p>תפקיד מערכות C ו-D, וניוד המספרים מול ימות.</p>
+        <div class="when">במקביל</div>
+      </div>
+      <div class="card step">
+        <div class="n"></div>
+        <h3>פיילוט</h3>
+        <p>סקריפט התקנה + שחזור קו אחד מקצה לקצה.</p>
+        <div class="when">אחרי בחירת ספק</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>תיק ההקמה המלא · <b>15 מסמכים</b> · ריפו <b>taharat-telephony</b></span>
+    <span>טיוטת הקמה — תמוז תשפ"ו</span>
+  </footer>
+
+</div>
+</body></html>

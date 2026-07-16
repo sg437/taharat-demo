@@ -1,0 +1,491 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0e7c86"></head><body>
+<title>מערכת טלפוניה — הדגמה חיה</title>
+<style>
+  :root{
+    --bg:#e9f1f1;--surface:#fff;--surface-2:#f3f9f8;--ink:#10242b;--ink-soft:#3d555c;
+    --muted:#6a8087;--border:#d8e6e5;--accent:#0e7c86;--accent-strong:#0a5f68;--accent-soft:#d6eceb;
+    --brass:#9c6f2c;--good:#2c7a52;--good-soft:#d7ecdf;--warn:#a9761f;--warn-soft:#f4e8ce;
+    --alert:#b0442c;--alert-soft:#f4ddd5;--screen:#0c1f24;--screen-ink:#dff3f1;
+    --shadow:0 1px 2px rgba(16,36,43,.06),0 10px 30px rgba(16,36,43,.08);--radius:14px;
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#081317;--surface:#0f2129;--surface-2:#16303a;--ink:#e9f4f4;--ink-soft:#b2c8cc;
+    --muted:#7d979d;--border:#22404a;--accent:#3bb2bd;--accent-strong:#5cc9d3;--accent-soft:#10333c;
+    --brass:#cc9c56;--good:#54b888;--good-soft:#123527;--warn:#d5a149;--warn-soft:#332813;
+    --alert:#df6f59;--alert-soft:#38180f;--screen:#04141a;--screen-ink:#bfeae6;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 34px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="light"]{--bg:#e9f1f1;--surface:#fff;--surface-2:#f3f9f8;--ink:#10242b;--ink-soft:#3d555c;--muted:#6a8087;--border:#d8e6e5;--accent:#0e7c86;--accent-strong:#0a5f68;--accent-soft:#d6eceb;--good:#2c7a52;--good-soft:#d7ecdf;--warn:#a9761f;--warn-soft:#f4e8ce;--alert:#b0442c;--alert-soft:#f4ddd5;--screen:#0c1f24;--screen-ink:#dff3f1}
+  :root[data-theme="dark"]{--bg:#081317;--surface:#0f2129;--surface-2:#16303a;--ink:#e9f4f4;--ink-soft:#b2c8cc;--muted:#7d979d;--border:#22404a;--accent:#3bb2bd;--accent-strong:#5cc9d3;--accent-soft:#10333c;--good:#54b888;--good-soft:#123527;--warn:#d5a149;--warn-soft:#332813;--alert:#df6f59;--alert-soft:#38180f;--screen:#04141a;--screen-ink:#bfeae6}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);direction:rtl;
+    font-family:"Assistant","Heebo","Segoe UI","Arial Hebrew",system-ui,sans-serif;line-height:1.55}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px clamp(14px,4vw,32px) 60px}
+  h1,h2,h3{margin:0;text-wrap:balance}
+  button{font:inherit;cursor:pointer}
+
+  header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;margin-bottom:6px}
+  .brand{font-weight:800;font-size:1.15rem}
+  .brand small{display:block;font-weight:600;font-size:.75rem;color:var(--muted)}
+  .tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px;box-shadow:var(--shadow)}
+  .tabs button{border:0;background:transparent;color:var(--ink-soft);font-weight:700;font-size:.9rem;padding:9px 15px;border-radius:8px}
+  .tabs button.on{background:var(--accent);color:#fff}
+  .hint{font-size:.85rem;color:var(--muted);margin:8px 0 20px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+
+  /* ---------- PHONE ---------- */
+  .phone-layout{display:grid;grid-template-columns:330px 1fr;gap:20px;align-items:start}
+  @media(max-width:760px){.phone-layout{grid-template-columns:1fr}}
+  .device{background:linear-gradient(180deg,#16323b,#0c2228);border-radius:34px;padding:16px;box-shadow:var(--shadow);border:1px solid #0a1a1f}
+  .screen{background:var(--screen);color:var(--screen-ink);border-radius:20px;min-height:230px;padding:18px;display:flex;flex-direction:column;gap:10px}
+  .screen .ctx{font-size:.72rem;letter-spacing:.12em;color:#5fbfc4;font-weight:700;text-transform:uppercase}
+  .screen .says{font-size:.98rem;line-height:1.5}
+  .screen .says b{color:#8fd9dc}
+  .screen .field{margin-top:auto;display:flex;gap:6px}
+  .screen input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#eafffe;border-radius:9px;padding:9px 11px;font:inherit}
+  .screen .go{background:#2f9aa2;border:0;color:#022;border-radius:9px;padding:0 14px;font-weight:800}
+  .rec-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px;font-size:.86rem}
+  .rec-card .rn{font-weight:800;color:#9fe4e2;margin-bottom:6px;font-size:.98rem}
+  .rec-card .row{display:flex;gap:6px;padding:2px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+  .rec-card .row .k{color:#7fc4c7;min-width:70px}
+
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .keypad button{aspect-ratio:1.5;border-radius:14px;border:1px solid rgba(255,255,255,.12);
+    background:linear-gradient(180deg,#1d3b44,#152e36);color:#dff3f1;font-size:1.25rem;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+  .keypad button small{font-size:.52rem;color:#6fb3b8;font-weight:600;letter-spacing:.04em}
+  .keypad button:active{transform:scale(.96)}
+  .keypad button:disabled{opacity:.28}
+  .callbar{display:flex;gap:8px;margin-top:12px}
+  .callbar button{flex:1;border:0;border-radius:12px;padding:11px;font-weight:800}
+  .call-start{background:var(--good);color:#fff}
+  .call-end{background:var(--alert);color:#fff}
+
+  .log h3{font-size:.95rem;margin-bottom:4px}
+  .log .sub{font-size:.82rem;color:var(--muted);margin-bottom:12px}
+  .steps{display:flex;flex-direction:column;gap:8px}
+  .step{display:flex;gap:10px;font-size:.9rem;padding:9px 12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border)}
+  .step .ic{flex:0 0 auto;font-weight:800;color:var(--accent)}
+  .step.caller{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 22%,transparent)}
+  .step.caller .ic{color:var(--accent-strong)}
+  .step.ok .ic{color:var(--good)} .step.warn .ic{color:var(--warn)}
+  .mono{font-variant-numeric:tabular-nums}
+
+  /* ---------- PANEL ---------- */
+  .panel-grid{display:grid;grid-template-columns:180px 1fr;gap:18px;align-items:start}
+  @media(max-width:680px){.panel-grid{grid-template-columns:1fr}}
+  .pnav{padding:12px}
+  .pnav button{display:block;width:100%;text-align:right;border:0;background:transparent;color:var(--ink);
+    font-weight:700;font-size:.92rem;padding:9px 12px;border-radius:9px;margin-bottom:3px}
+  .pnav button.on{background:var(--accent);color:#fff}
+  .pnav button:hover:not(.on){background:var(--surface-2)}
+  .pane{padding:20px 22px}
+  .pane h2{font-size:1.25rem;margin-bottom:16px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px}
+  .kpi{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px}
+  .kpi .n{font-size:1.6rem;font-weight:800;line-height:1} .kpi .l{font-size:.78rem;color:var(--muted);margin-top:4px}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:right;padding:9px 11px;border-bottom:1px solid var(--border)}
+  th{color:var(--muted);font-weight:700;font-size:.78rem}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.76rem;font-weight:700}
+  .pill.good{background:var(--good-soft);color:var(--good)}.pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.info{background:var(--accent-soft);color:var(--accent-strong)}
+  .btn{background:var(--accent);color:#fff;border:0;font-weight:700;padding:9px 15px;border-radius:9px}
+  .btn:hover{background:var(--accent-strong)}
+  .btn.sm{padding:6px 12px;font-size:.82rem}
+  label{display:block;font-weight:700;font-size:.86rem;margin:12px 0 5px}
+  input,select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:9px;font:inherit;background:var(--surface);color:var(--ink)}
+  .progress{height:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;overflow:hidden;margin:14px 0}
+  .progress .fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-strong));transition:width .25s}
+  .run-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .run-kpis .k{text-align:center;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px}
+  .run-kpis .k .n{font-size:1.5rem;font-weight:800}.run-kpis .k .l{font-size:.75rem;color:var(--muted)}
+  .foot{margin-top:26px;font-size:.8rem;color:var(--muted);text-align:center}
+  .badge{display:inline-block;background:var(--good-soft);color:var(--good);font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:999px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">מערכת טלפוניה — הדגמה חיה <small>טהרת המשפחה · אב-טיפוס לפני החיבורים</small></div>
+    <div class="tabs">
+      <button id="tab-phone" class="on" onclick="setMode('phone')">☎ המרכזייה</button>
+      <button id="tab-panel" onclick="setMode('panel')">🖥 פאנל הניהול</button>
+    </div>
+  </header>
+  <div class="hint" id="hint">כך חווה זאת <b>המאזין</b>: לחץ "התחל שיחה", ואז נווט בתפריטים בעזרת המקלדת — בדיוק כמו בטלפון.</div>
+
+  <!-- ============ PHONE ============ -->
+  <div id="view-phone">
+    <div class="phone-layout">
+      <div class="device">
+        <div class="screen" id="screen">
+          <div class="ctx" id="scr-ctx">מנותק</div>
+          <div class="says" id="scr-says">לחץ "התחל שיחה" כדי לחייג לקו המידע.</div>
+          <div id="scr-extra"></div>
+        </div>
+        <div class="keypad" id="keypad"></div>
+        <div style="display:flex;gap:6px;margin-top:12px">
+          <select id="line-pick" style="flex:1;border-radius:10px;padding:8px 10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#eafffe;font:inherit">
+            <option value="main_b">קו המידע (0772222200)</option>
+            <option value="main_a">קו האיסוף והקמפיינים (083011900)</option>
+          </select>
+        </div>
+        <div class="callbar">
+          <button class="call-start" onclick="startCall()">התחל שיחה</button>
+          <button class="call-end" onclick="endCall()">נתק</button>
+        </div>
+      </div>
+      <div class="card log pane">
+        <h3>מה קורה בשיחה</h3>
+        <div class="sub">כל צעד מתועד — כדי לראות בדיוק איך המערכת מגיבה.</div>
+        <div class="steps" id="steps"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL ============ -->
+  <div id="view-panel" hidden>
+    <div class="panel-grid">
+      <div class="card pnav">
+        <button class="on" onclick="setPane('dash',event)">לוח בקרה</button>
+        <button onclick="setPane('mik',event)">מקוואות</button>
+        <button onclick="setPane('camp',event)">קמפיינים</button>
+        <button onclick="setPane('inbox',event)">הודעות נכנסות</button>
+      </div>
+      <div class="card pane" id="pane"></div>
+    </div>
+  </div>
+
+  <div class="foot">אב-טיפוס אינטראקטיבי · הלוגיקה (זיהוי דיבור, זמנים, קמפיינים) רצה בפועל בדפדפן · ללא חיבורי טלפוניה עדיין</div>
+</div>
+
+<script>
+/* ===================== נתוני דמה ===================== */
+const MIKVAOT = [
+  {id:1,name:'מקווה רמות',aliases:['רמות','רמות ב','רמות פולין'],city:'ירושלים',council:'עיריית ירושלים',address:'רחוב שירת הים 14',phone:'02-5710000',phone_alt:'',balanit:'מרת לוי',hs:'20:00–23:00',hw:'19:00–22:30',hes:'סגור',hms:'21:30–23:30',acc:'full',sup:'supervised',special:'',notes:'חניה בשפע'},
+  {id:2,name:'מקווה גבעת שאול',aliases:['גבעת שאול','גב"ש','הר נוף','גבעת שאול הר נוף'],city:'ירושלים',council:'עיריית ירושלים',address:'רחוב הקבלן 8',phone:'02-6512345',phone_alt:'052-7000000',balanit:'מרת פרידמן',hs:'19:30–23:00',hw:'19:00–22:30',hes:'סגור',hms:'21:00–23:00',acc:'partial',sup:'supervised',special:'',notes:''},
+  {id:3,name:'מקווה בית וגן',aliases:['בית וגן','בית ווגן'],city:'ירושלים',council:'עיריית ירושלים',address:'רחוב הפסגה 22',phone:'02-6431111',phone_alt:'',balanit:'מרת כהן',hs:'20:00–22:45',hw:'19:15–22:15',hes:'סגור',hms:'21:15–23:00',acc:'by_coordination',sup:'supervised',special:'',notes:''},
+  {id:4,name:'מקווה מודיעין עילית',aliases:['מודיעין עילית','קרית ספר','מודיעין עלית'],city:'מודיעין עילית',council:'מועצת מודיעין עילית',address:'רחוב חפץ חיים 3',phone:'08-9741000',phone_alt:'',balanit:'מרת ויס',hs:'20:00–23:30',hw:'19:00–23:00',hes:'סגור',hms:'21:30–00:00',acc:'full',sup:'supervised',special:'שופץ לאחרונה',notes:''},
+  {id:5,name:'מקווה בית שמש מרכז',aliases:['בית שמש','בית שמש מרכז','רמת בית שמש'],city:'בית שמש',council:'עיריית בית שמש',address:'רחוב נהר הירדן 5',phone:'02-9911234',phone_alt:'',balanit:'מרת אזולאי',hs:'19:45–22:45',hw:'19:00–22:15',hes:'סגור',hms:'21:00–23:00',acc:'full',sup:'no_info',special:'',notes:'ממתין לחידוש פיקוח'},
+  {id:6,name:'מקווה ביתר עילית',aliases:['ביתר','ביתר עילית'],city:'ביתר עילית',council:'מועצת ביתר עילית',address:'רחוב הרב שך 11',phone:'02-5800000',phone_alt:'',balanit:'מרת שפירא',hs:'20:00–23:00',hw:'19:00–22:30',hes:'סגור',hms:'21:30–23:30',acc:'partial',sup:'supervised',special:'',notes:''},
+];
+const ACC={full:'נגישות מלאה',partial:'נגישות חלקית',by_coordination:'נגישות בתאום מראש',none:'ללא מידע נגישות'};
+const SUP={supervised:'✓ בפיקוח',no_info:'אין מידע על פיקוח'};
+
+let CAMPAIGNS=[
+  {id:50,name:'מודיעין עלית ערב שבת',type:'קולי',n:432,blocked:6,status:'done'},
+  {id:51,name:'ערב שבת אזור חיוג 02',type:'קולי',n:1197,blocked:52,status:'scheduled'},
+  {id:52,name:'תזכורת איסוף ביתר',type:'צינתוק',n:509,blocked:8,status:'draft'},
+];
+const INBOX=[
+  {when:'היום 09:14',ext:'השארת הודעה',txt:'שלום, רציתי לברר לגבי שעות הפתיחה בערב שבת במקווה רמות.'},
+  {when:'אתמול 21:03',ext:'מענה אנושי',txt:'בקשה לעדכון מספר טלפון של בלנית בבית שמש.'},
+];
+
+/* ===================== התאמת דיבור (פורט מ-matcher.py) ===================== */
+function normalize(s){
+  if(!s) return '';
+  s=s.normalize('NFKD').replace(/[֑-ׇ]/g,'');      // ניקוד/טעמים
+  s=s.replace(/["'׳״`]/g,'').replace(/[^א-ת ]/g,' ');
+  s=s.replace(/וו/g,'ו').replace(/יי/g,'י').replace(/אא/g,'א');
+  return s.replace(/\s+/g,' ').trim();
+}
+function lev(a,b){if(a===b)return 0;if(!a)return b.length;if(!b)return a.length;
+  let p=[...Array(b.length+1).keys()];
+  for(let i=1;i<=a.length;i++){let c=[i];for(let j=1;j<=b.length;j++){
+    c.push(Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]!==b[j-1])));}p=c;}return p[b.length];}
+function sim(a,b){a=normalize(a);b=normalize(b);if(!a||!b)return 0;return 1-lev(a,b)/Math.max(a.length,b.length);}
+function bestMikveh(spoken,thr=.72){
+  let best=null,score=0;
+  for(const m of MIKVAOT){for(const c of [m.name,...m.aliases]){const s=sim(spoken,c);if(s>score){score=s;best=m;}}}
+  return score>=thr?{m:best,score}:{m:null,score};
+}
+
+/* ===================== זמן שקיעה (פורט מ-zmanim.py, NOAA) ===================== */
+function sunset(date,lat=31.7683,lon=35.2137,tz=3){
+  const J=Math.floor((date-new Date(Date.UTC(2000,0,1)))/86400000);
+  const lngH=lon/15,t=J+((18-lngH)/24),M=(0.9856*t)-3.289;
+  const rad=Math.PI/180,deg=180/Math.PI;
+  let L=(M+1.916*Math.sin(M*rad)+0.020*Math.sin(2*M*rad)+282.634)%360;if(L<0)L+=360;
+  let RA=(Math.atan(0.91764*Math.tan(L*rad))*deg)%360;if(RA<0)RA+=360;
+  RA+=(Math.floor(L/90)*90)-(Math.floor(RA/90)*90);RA/=15;
+  const sinDec=0.39782*Math.sin(L*rad),cosDec=Math.cos(Math.asin(sinDec));
+  const cosH=((Math.cos(90.833*rad))-(sinDec*Math.sin(lat*rad)))/(cosDec*Math.cos(lat*rad));
+  const H=(Math.acos(cosH)*deg)/15,T=H+RA-(0.06571*t)-6.622;
+  let UT=(T-lngH)%24;if(UT<0)UT+=24;let loc=(UT+tz)%24;
+  let hh=Math.floor(loc),mm=Math.round((loc-hh)*60);if(mm===60){hh=(hh+1)%24;mm=0;}
+  return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+}
+/* ספירת העומר (פורט מ-zmanim.py) */
+const OMER_START={2026:new Date(2026,3,3),2027:new Date(2027,3,22)};
+function omerDay(date){const s=OMER_START[date.getFullYear()];if(!s)return null;
+  const d=Math.round((date-s)/86400000)+1;return(d>=1&&d<=49)?d:null;}
+function omerText(d){if(!d)return'';if(d<7)return`היום ${d} ימים לעומר`;
+  const w=Math.floor(d/7),r=d%7;let p=`${w} שבועות`+(r?` ו-${r} ימים`:'');return`היום ${d} ימים שהם ${p} לעומר`;}
+
+/* ===================== מכונת המצבים של ה-IVR ===================== */
+const TREE={
+  /* ===== קו המידע (מערכת B) ===== */
+  main_b:{ctx:'קו המידע · תפריט ראשי',says:'שלום וברכה, הגעתם לקו המידע של <b>טהרת המשפחה</b>.<br>חיפוש מקווה / מענה רבני — <b>1</b> · תרומות — <b>2</b> · שיעורים — <b>3</b> · ימי עיון — <b>4</b> · מענה אנושי — <b>5</b> · הרשמה לקו — <b>6</b> · השארת הודעה — <b>7</b> · הסרה מהרשימה — <b>8</b> · זמנים הלכתיים — <b>9</b>.',
+    keys:{'1':'mikveh','2':'donations','3':'shiurim','4':'yemei','5':'personal','6':'signup','7':'leave','8':'optout','9':'zmanim'}},
+  shiurim:{ctx:'שיעורים והרצאות',says:'שיעורים לפי מרצה: הרב רוזנבלום — <b>1</b> · הרב זמיר כהן — <b>2</b> · הרב פנגר — <b>3</b>. לתפריט הקודם — <b>0</b>.',
+    keys:{'1':'shiur','2':'shiur','3':'shiur','0':'main_b'},action:'shiurpick'},
+  yemei:{ctx:'ימי עיון',says:'ימי עיון לבלניות — <b>1</b> · ימי עיון וכנסים — <b>2</b>. לתפריט הקודם — <b>0</b>.',keys:{'0':'main_b','1':'main_b','2':'main_b'}},
+  zmanim:{ctx:'זמנים הלכתיים',says:'זמן השקיעה של היום — <b>1</b> · ספירת העומר — <b>2</b>. לתפריט הקודם — <b>0</b>.',keys:{'1':'sunset','2':'omer','0':'main_b'}},
+
+  /* ===== קו האיסוף והקמפיינים (מערכת A) ===== */
+  main_a:{ctx:'קו האיסוף · תפריט ראשי',says:'הגעתם לקו האיסוף של <b>טהרת המשפחה</b>.<br>הודעות שנשלחו — <b>1</b> · תחנות איסוף — <b>2</b> · השארת הודעה — <b>3</b>.',
+    keys:{'1':'sent','2':'stations','3':'leave'}},
+  sent:{ctx:'הודעות שנשלחו · לפי אזור',says:'מודיעין עילית — <b>1</b> · בית שמש — <b>2</b> · ירושלים — <b>3</b> · ביתר — <b>4</b>. לתפריט הקודם — <b>0</b>.',
+    keys:{'1':'playmsg','2':'playmsg','3':'sent_jlm','4':'playmsg','0':'main_a'},action:'areamsg'},
+  sent_jlm:{ctx:'ירושלים · שכונות',says:'רמות — <b>1</b> · גבעת שאול / הר נוף — <b>2</b> · בית וגן — <b>3</b> · רמת שלמה — <b>4</b>. חזרה — <b>0</b>.',
+    keys:{'1':'playmsg','2':'playmsg','3':'playmsg','4':'playmsg','0':'sent'},action:'areamsg'},
+  stations:{ctx:'תחנות איסוף · לפי עיר',says:'מודיעין עילית — <b>1</b> · ירושלים — <b>2</b> · בית שמש — <b>3</b>. לתפריט הקודם — <b>0</b>.',
+    keys:{'1':'station','2':'stations_jlm','3':'station','0':'main_a'},action:'stationpick'},
+  stations_jlm:{ctx:'תחנות איסוף · ירושלים',says:'רמות — <b>1</b> · גבעת שאול / הר נוף — <b>2</b> · בית וגן — <b>3</b>. חזרה — <b>0</b>.',
+    keys:{'1':'station','2':'station','3':'station','0':'stations'},action:'stationpick'},
+};
+const SHIURIM={'1':'הרב ברוך רוזנבלום — פרשת השבוע','2':'הרב זמיר כהן — טהרת המשפחה','3':'הרב יצחק פנגר — חיזוק'};
+const STATIONS={'1':'תחנת רמות: יום שלישי 18:00–20:00, רחוב שירת הים','2':'תחנת גבעת שאול/הר נוף: יום שני 17:30–19:30, מרכז הר נוף','3':'תחנת בית וגן: יום רביעי 18:00–20:00, ליד ביהכנ״ס הגדול'};
+
+let calling=false, node='idle', steps=[];
+const $=id=>document.getElementById(id);
+
+function addStep(txt,who='sys',cls=''){steps.push({txt,who,cls});renderSteps();}
+function renderSteps(){
+  $('steps').innerHTML=steps.map(s=>`<div class="step ${s.who==='caller'?'caller':''} ${s.cls}">
+    <span class="ic">${s.who==='caller'?'☎':'📢'}</span><span>${s.txt}</span></div>`).join('')
+    ||'<div class="step">— אין עדיין פעילות —</div>';
+  $('steps').lastElementChild?.scrollIntoView({block:'nearest'});
+}
+function renderScreen(){
+  const n=TREE[node];
+  if(!calling){$('scr-ctx').textContent='מנותק';$('scr-says').innerHTML='לחץ "התחל שיחה" כדי לחייג לקו המידע.';$('scr-extra').innerHTML='';drawKeypad(null);return;}
+  if(n){$('scr-ctx').textContent=n.ctx;$('scr-says').innerHTML=n.says;$('scr-extra').innerHTML='';drawKeypad(n.keys);}
+}
+function drawKeypad(keys){
+  const labels={'1':'','2':'ABC','3':'DEF','4':'GHI','5':'JKL','6':'MNO','7':'PQRS','8':'TUV','9':'WXYZ','0':'','*':'','#':''};
+  $('keypad').innerHTML=['1','2','3','4','5','6','7','8','9','*','0','#'].map(d=>{
+    const active=calling&&keys&&keys[d];
+    return `<button ${active?'':'disabled'} onclick="press('${d}')">${d}<small>${labels[d]}</small></button>`;
+  }).join('');
+}
+let curLine='main_b';
+function startCall(){const line=$('line-pick').value;curLine=line;calling=true;node=line;steps=[];
+  const num=line==='main_a'?'083011900':'0772222200';
+  addStep(`המאזין מחייג לקו — ${num}`,'caller');addStep(TREE[line].says.replace(/<[^>]+>/g,''));renderScreen();}
+function endCall(){calling=false;node='idle';if(steps.length)addStep('השיחה נותקה.','caller','warn');renderScreen();}
+function press(d){
+  if(!calling)return;
+  const n=TREE[node];
+  if(!n){ if(d==='0'){addStep('הקיש 0','caller');goto(curLine);} return; }  // חזרה ממסך פעולה
+  if(!n.keys[d])return;
+  addStep(`הקיש ${d}`,'caller');
+  const dest=n.keys[d];
+  if(dest==='shiur')return playShiur(d);
+  if(dest==='playmsg')return playAreaMsg(n.ctx,d);
+  if(dest==='station')return showStation(n.ctx,d);
+  goto(dest);
+}
+function goto(dest){
+  const actions={mikveh:mikvehSearch,donations:doDonations,sunset:doSunset,omer:doOmer,
+    personal:doPersonal,leave:doLeave,signup:doSignup,optout:doOptout};
+  if(actions[dest])return actions[dest]();
+  node=dest;const n=TREE[dest];addStep(n.says.replace(/<[^>]+>/g,''));renderScreen();
+}
+function backKeys(to){return {'0':to};}
+function playShiur(d){$('scr-ctx').textContent='משמיע שיעור';
+  $('scr-says').innerHTML=`▶ <b>${SHIURIM[d]}</b>`;$('scr-extra').innerHTML=`<div class="rec-card">משמיע כעת… (מעקב האזנות + דירוג נשמרים, כמו בימות).</div>`;
+  drawKeypad({'0':'shiurim'});addStep(`▶ משמיע: ${SHIURIM[d]}`,'','ok');}
+function playAreaMsg(ctx,d){$('scr-ctx').textContent='הודעה שנשלחה';
+  $('scr-says').innerHTML='▶ משמיע את ההודעה האחרונה שנשלחה לאזור זה.';$('scr-extra').innerHTML=`<div class="rec-card">"תושבים יקרים, הניידת תגיע השבוע בערב שבת. נא להכין את המעטפות…"</div>`;
+  drawKeypad({'0':node});addStep('▶ משמיע הודעת אזור','','ok');}
+function showStation(ctx,d){$('scr-ctx').textContent='תחנת איסוף';
+  $('scr-says').innerHTML='פרטי התחנה הקבועה של הניידת:';$('scr-extra').innerHTML=`<div class="rec-card">${STATIONS[d]||'אין מידע לתחנה זו.'}</div>`;
+  drawKeypad({'0':node});addStep('משמיע פרטי תחנת איסוף','','ok');}
+
+/* --- שלוחות "פעולה" --- */
+function mikvehSearch(){
+  node='mikveh';$('scr-ctx').textContent='חיפוש מקווה בדיבור';
+  $('scr-says').innerHTML='אמור/הקלד <b>שם מקווה או עיר</b>, והמערכת תזהה ותקריא את הפרטים.';
+  $('scr-extra').innerHTML=`<div class="field"><input id="mik-in" placeholder="למשל: הר נוף / בית שמש / גב&quot;ש" onkeydown="if(event.key==='Enter')runMik()"><button class="go" onclick="runMik()">חפש</button></div>`;
+  drawKeypad({'0':'main'});addStep('המערכת: "אמור שם מקווה או עיר"');setTimeout(()=>$('mik-in')?.focus(),50);
+}
+function runMik(){
+  const q=$('mik-in').value.trim();if(!q)return;
+  addStep(`אמר: "${q}"`,'caller');
+  const {m,score}=bestMikveh(q);
+  if(!m){addStep(`לא זוהתה התאמה (דמיון ${(score*100|0)}%) → מעבר למענה רבנים.`,'','warn');
+    $('scr-ctx').textContent='מענה רבנים';$('scr-says').innerHTML='לא נמצא מקווה תואם. מעביר אותך למענה רבני…';$('scr-extra').innerHTML=rabbiBox();return;}
+  addStep(`זוהה: <b>${m.name}</b> (דמיון ${(score*100|0)}%) — מקריא רשומה.`,'','ok');
+  $('scr-ctx').textContent='פרטי המקווה';$('scr-says').innerHTML=`נמצא: <b>${m.name}</b>`;
+  const hours = (new Date().getDay()===5)?('ערב שבת: '+m.hes):('קיץ: '+m.hs);
+  $('scr-extra').innerHTML=`<div class="rec-card">
+    <div class="rn">${m.name}</div>
+    ${row('עיר',m.city)}${row('מועצה',m.council)}${row('כתובת',m.address)}
+    ${row('טלפון',m.phone)}${m.phone_alt?row('נוסף',m.phone_alt):''}
+    ${row('בלנית',m.balanit)}${row('שעות',hours)}
+    ${row('הנגשה',ACC[m.acc])}${row('פיקוח',SUP[m.sup])}
+    ${m.special?row('הודעה',m.special):''}
+  </div>`;
+}
+function row(k,v){return `<div class="row"><span class="k">${k}</span><span>${v}</span></div>`;}
+function rabbiBox(){
+  const h=new Date().getHours(),open=(h>=7&&h<23);
+  return `<div class="rec-card">${open
+    ?'<b style="color:#8fd9dc">מחובר לתור הרבנים</b><br>שעות המענה פתוחות כעת. נא להמתין…'
+    :'<b style="color:#e6b86a">מחוץ לשעות המענה</b><br>המענה הרבני פעיל א׳-ה׳ 07:00–23:00. נא לנסות מאוחר יותר.'}</div>`;
+}
+function doSunset(){
+  node='sunset';const t=sunset(new Date());
+  $('scr-ctx').textContent='זמן שקיעה';$('scr-says').innerHTML=`זמן השקיעה היום בירושלים הוא <b>${t}</b>.`;
+  $('scr-extra').innerHTML=`<div class="rec-card">מחושב חי (אלגוריתם NOAA) לפי התאריך — בדיוק כמו <b>say_sunset_time</b> בימות.</div>`;
+  drawKeypad({'0':'main'});addStep(`המערכת חישבה והקריאה: זמן שקיעה ${t}`,'','ok');
+}
+function doPersonal(){
+  node='personal';const h=new Date().getHours(),open=(h>=9&&h<21);
+  $('scr-ctx').textContent='מענה אנושי';
+  $('scr-says').innerHTML=open?'מעביר אותך לנציג… <b>♪ מוזיקת המתנה</b>':'המשרד סגור כעת (א׳-ה׳ 09:00–21:00).';
+  $('scr-extra').innerHTML=`<div class="rec-card">${open?'ניתוב מבוסס-שעות למספר הצוות (Follow-Me + Time Conditions).':'מחוץ לשעות הפעילות — לפי הגדרת routing_time.'}</div>`;
+  drawKeypad({'0':'main'});addStep(open?'ניתוב לנציג (בתוך שעות הפעילות)':'מחוץ לשעות — הושמעה הודעה','',open?'ok':'warn');
+}
+function doLeave(){
+  node='leave';$('scr-ctx').textContent='השארת הודעה';
+  $('scr-says').innerHTML='נא השאירו הודעה לאחר הצפצוף… <b>🔴 מקליט</b>';
+  $('scr-extra').innerHTML=`<div class="field"><input id="msg-in" placeholder="הקלד את ההודעה…" onkeydown="if(event.key==='Enter')sendMsg()"><button class="go" onclick="sendMsg()">שלח</button></div>`;
+  drawKeypad({'0':'main'});addStep('המערכת: "השאר הודעה לאחר הצפצוף"');
+}
+function sendMsg(){
+  const v=$('msg-in').value.trim();if(!v)return;
+  INBOX.unshift({when:'עכשיו',ext:'השארת הודעה',txt:v});
+  addStep('ההודעה הוקלטה ונשלחה למייל ✓','','ok');
+  $('scr-says').innerHTML='<b>תודה!</b> ההודעה נשלחה למייל הארגון.';$('scr-extra').innerHTML='';
+}
+
+/* --- תרומות (נדרים פלוס) --- */
+function doDonations(){node='donate';$('scr-ctx').textContent='תרומות · נדרים פלוס';
+  $('scr-says').innerHTML='להקדשה ולתרומה — הקישו את <b>סכום התרומה</b> בשקלים.';
+  $('scr-extra').innerHTML=`<div class="field"><input id="don-amt" inputmode="numeric" placeholder="למשל: 100" onkeydown="if(event.key==='Enter')donAmount()"><button class="go" onclick="donAmount()">אישור</button></div>`;
+  drawKeypad({'0':'main_b'});addStep('המערכת: "הקש סכום תרומה"');}
+function donAmount(){const a=parseInt($('don-amt').value,10);
+  if(!a||a<1||a>100000){$('scr-says').innerHTML='סכום לא תקין. נסו שוב.';return;}
+  addStep(`הקיש סכום: ${a} ₪`,'caller');
+  $('scr-says').innerHTML=`סכום התרומה: <b>${a} ₪</b>. הקישו את <b>מספר כרטיס האשראי</b>.`;
+  $('scr-extra').innerHTML=`<div class="field"><input id="don-card" inputmode="numeric" placeholder="•••• •••• •••• ••••" onkeydown="if(event.key==='Enter')donCharge(${a})"><button class="go" onclick="donCharge(${a})">חייב</button></div>
+  <div class="rec-card" style="margin-top:8px;font-size:.78rem">🔒 פרטי הכרטיס אינם נשמרים אצלנו — מועברים ישירות לנדרים פלוס (PCI).</div>`;}
+function donCharge(a){const c=$('don-card').value.replace(/\s/g,'');
+  if(c.length<8){$('scr-says').innerHTML='מספר כרטיס לא תקין.';return;}
+  addStep('הקיש פרטי כרטיס (מוסתר) → נשלח לנדרים פלוס','caller');
+  $('scr-ctx').textContent='אישור תרומה';
+  const conf=Math.floor(100000+Math.random()*900000);
+  $('scr-says').innerHTML=`<b>התרומה אושרה!</b> תודה רבה. סכום: ${a} ₪.`;
+  $('scr-extra').innerHTML=`<div class="rec-card">מספר אישור: <b>${conf}</b><br>נסלק דרך <b>נדרים פלוס</b>. קבלה תישלח.</div>`;
+  drawKeypad({'0':'main_b'});addStep(`✓ חיוב ${a} ₪ אושר (נדרים פלוס) · אישור ${conf}`,'','ok');}
+
+/* --- ספירת העומר --- */
+function doOmer(){node='omer';const d=omerDay(new Date());$('scr-ctx').textContent='ספירת העומר';
+  if(d){$('scr-says').innerHTML=`<b>${omerText(d)}</b>.`;$('scr-extra').innerHTML=`<div class="rec-card">מחושב לפי התאריך — מנוי שומע את הספירה מדי ערב.</div>`;}
+  else{$('scr-says').innerHTML='היום <b>אין</b> ספירת עומר.';
+    $('scr-extra').innerHTML=`<div class="rec-card">הספירה נמנית בין פסח לשבועות. לדוגמה, ביום ח׳: "${omerText(8)}".</div>`;}
+  drawKeypad({'0':'zmanim'});addStep(d?`הקריא: ${omerText(d)}`:'מחוץ לתקופת הספירה','',d?'ok':'');}
+
+/* --- הרשמה / הסרה עצמית --- */
+function doSignup(){node='signup';$('scr-ctx').textContent='הרשמה לקו';
+  $('scr-says').innerHTML='<b>נרשמת בהצלחה!</b> המספר שלך נוסף לרשימת התפוצה של הקו.';
+  $('scr-extra').innerHTML=`<div class="rec-card">כך נרשמו 24,608 המנויים — מתקשרים ומצטרפים (הוספת מספר לרשימת תפוצה).</div>`;
+  drawKeypad({'0':'main_b'});addStep('✓ המספר נוסף לרשימת התפוצה','','ok');}
+function doOptout(){node='optout';$('scr-ctx').textContent='הסרה מהרשימה';
+  $('scr-says').innerHTML='המספר שלך <b>הוסר</b> מרשימת התפוצה. לא יישלחו אליך עוד הודעות.';
+  $('scr-extra').innerHTML=`<div class="rec-card">רשומה ברשימת ההסרה הגלובלית (חוק הספאם) — תיחסם בכל שיגור עתידי.</div>`;
+  drawKeypad({'0':'main_b'});addStep('✓ הוסר מרשימת התפוצה (הסרה)','','warn');}
+
+/* ===================== פאנל ===================== */
+function setMode(m){
+  document.getElementById('view-phone').hidden=(m!=='phone');
+  document.getElementById('view-panel').hidden=(m!=='panel');
+  $('tab-phone').classList.toggle('on',m==='phone');$('tab-panel').classList.toggle('on',m==='panel');
+  $('hint').innerHTML = m==='phone'
+    ? 'כך חווה זאת <b>המאזין</b>: לחץ "התחל שיחה", ואז נווט בתפריטים בעזרת המקלדת.'
+    : 'כך <b>אתה</b> מנהל: נווט בין המסכים, צור קמפיין, והרץ אותו כדי לראות דוח מסירה חי.';
+  if(m==='panel')setPane('dash');
+}
+let paneName='dash';
+function setPane(p,ev){paneName=p;
+  document.querySelectorAll('.pnav button').forEach(b=>b.classList.remove('on'));
+  if(ev)ev.target.classList.add('on');else document.querySelector('.pnav button').classList.add('on');
+  renderPane();
+}
+function renderPane(){
+  const el=$('pane');
+  if(paneName==='dash'){el.innerHTML=`<h2>לוח בקרה</h2>
+    <div class="kpis">
+      <div class="kpi"><div class="n mono">24,608</div><div class="l">מנויים בקו הגדול</div></div>
+      <div class="kpi"><div class="n mono">${MIKVAOT.length*36}</div><div class="l">מקוואות</div></div>
+      <div class="kpi"><div class="n mono">${CAMPAIGNS.length}</div><div class="l">קמפיינים</div></div>
+      <div class="kpi"><div class="n mono">${INBOX.length}</div><div class="l">הודעות נכנסות</div></div>
+    </div>
+    <table><tr><th>#</th><th>קמפיין</th><th>סוג</th><th>מספרים</th><th>סטטוס</th></tr>
+    ${CAMPAIGNS.map(c=>`<tr><td>${c.id}</td><td>${c.name}</td><td>${c.type}</td><td class="mono">${c.n.toLocaleString()}</td>
+      <td><span class="pill ${c.status==='done'?'good':c.status==='scheduled'?'warn':'info'}">${({done:'הסתיים',scheduled:'מתוזמן',draft:'טיוטה'})[c.status]}</span></td></tr>`).join('')}</table>`;}
+  else if(paneName==='mik'){el.innerHTML=`<h2>ניהול מקוואות</h2>
+    <table><tr><th>שם</th><th>עיר</th><th>פיקוח</th><th>הנגשה</th></tr>
+    ${MIKVAOT.map(m=>`<tr><td>${m.name}</td><td>${m.city}</td>
+      <td><span class="pill ${m.sup==='supervised'?'good':'warn'}">${SUP[m.sup]}</span></td><td>${ACC[m.acc]}</td></tr>`).join('')}</table>`;}
+  else if(paneName==='camp'){el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0">קמפיינים</h2><button class="btn sm" onclick="newCampForm()">+ קמפיין חדש</button></div>
+    <div id="camp-body"></div>`;renderCampList();}
+  else if(paneName==='inbox'){el.innerHTML=`<h2>הודעות מהציבור</h2>
+    <table><tr><th>מתי</th><th>שלוחה</th><th>תמלול</th></tr>
+    ${INBOX.map(m=>`<tr><td>${m.when}</td><td>${m.ext}</td><td>${m.txt}</td></tr>`).join('')}</table>`;}
+}
+function renderCampList(){
+  $('camp-body').innerHTML=`<table style="margin-top:14px"><tr><th>#</th><th>שם</th><th>סוג</th><th>מספרים</th><th></th></tr>
+    ${CAMPAIGNS.map(c=>`<tr><td>${c.id}</td><td>${c.name}</td><td>${c.type}</td><td class="mono">${c.n.toLocaleString()}</td>
+      <td><button class="btn sm" onclick="runCampaign(${c.id})">הפעל ▶</button></td></tr>`).join('')}</table>
+    <div id="run-area"></div>`;
+}
+function newCampForm(){
+  $('camp-body').innerHTML=`<div style="margin-top:8px">
+    <label>שם הקמפיין</label><input id="nc-name" placeholder="למשל: ערב שבת רמות">
+    <label>סוג</label><select id="nc-type"><option>קולי</option><option>צינתוק</option><option>SMS</option></select>
+    <label>פילוח לפי אזור</label><select id="nc-zone"><option>כל הרשימה</option><option>מודיעין עילית</option><option>ירושלים</option><option>בית שמש</option><option>ביתר</option></select>
+    <div style="margin-top:16px;display:flex;gap:8px"><button class="btn" onclick="saveCamp()">שמור</button>
+    <button class="btn sm" style="background:var(--muted)" onclick="renderCampList()">ביטול</button></div></div>`;
+}
+function saveCamp(){
+  const name=$('nc-name').value.trim()||'קמפיין ללא שם';
+  CAMPAIGNS.unshift({id:Math.max(...CAMPAIGNS.map(c=>c.id))+1,name,type:$('nc-type').value,
+    n:200+Math.floor(Math.random()*900),blocked:Math.floor(Math.random()*20),status:'draft'});
+  renderCampList();
+}
+/* הרצת קמפיין — משתמש בלוגיקה של engine.py (סינון + answer-rate + retry) */
+function runCampaign(id){
+  const c=CAMPAIGNS.find(x=>x.id===id);const total=c.n,optout=c.blocked;
+  const target=total-optout;let done=0,answered=0,noans=0,removed=0;
+  const area=$('run-area');
+  area.innerHTML=`<div class="card pane" style="margin-top:14px;box-shadow:none;border-color:var(--accent)">
+    <b>מריץ: ${c.name}</b> — ${target.toLocaleString()} נמענים (אחרי סינון ${optout} הסרות)
+    <div class="progress"><div class="fill" id="pf"></div></div>
+    <div class="run-kpis">
+      <div class="k"><div class="n mono" id="k-a" style="color:var(--good)">0</div><div class="l">נמסר</div></div>
+      <div class="k"><div class="n mono" id="k-n" style="color:var(--warn)">0</div><div class="l">לא נענה</div></div>
+      <div class="k"><div class="n mono" id="k-r" style="color:var(--alert)">0</div><div class="l">הסרות</div></div>
+    </div><div id="run-done"></div></div>`;
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const batch=Math.max(1,Math.round(target/40));
+  const tick=()=>{
+    for(let i=0;i<batch&&done<target;i++){done++;
+      if(Math.random()<0.62){answered++;if(Math.random()<0.03)removed++;}else noans++;}
+    $('pf').style.width=(done/target*100)+'%';
+    $('k-a').textContent=answered.toLocaleString();$('k-n').textContent=noans.toLocaleString();$('k-r').textContent=removed.toLocaleString();
+    if(done<target){reduce?tick():setTimeout(tick,40);}
+    else{c.status='done';$('run-done').innerHTML=`<div style="margin-top:12px" class="badge">✓ הקמפיין הסתיים · נמסר ${answered.toLocaleString()} מתוך ${target.toLocaleString()} (${(answered/target*100|0)}%)</div>`;}
+  };
+  tick();
+}
+
+/* init */
+drawKeypad(null);renderSteps();
+</script>
+</body></html>
