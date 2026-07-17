@@ -337,7 +337,7 @@ function playShiur(d){$('scr-ctx').textContent='משמיע שיעור';
   $('scr-says').innerHTML=`▶ <b>${SHIURIM[d]}</b>`;$('scr-extra').innerHTML=`<div class="rec-card">משמיע כעת… (מעקב האזנות + דירוג נשמרים, כמו בימות).</div>`;
   drawKeypad({'0':'shiurim'});addStep(`▶ משמיע: ${SHIURIM[d]}`,'','ok');}
 function playAreaMsg(ctx,d){$('scr-ctx').textContent='הודעה שנשלחה';
-  $('scr-says').innerHTML='▶ משמיע את ההודעה האחרונה שנשלחה לאזור זה.';$('scr-extra').innerHTML=`<div class="rec-card">"תושבים יקרים, הניידת תגיע השבוע בערב שבת. נא להכין את המעטפות…"</div>`;
+  $('scr-says').innerHTML='▶ משמיע את ההודעה האחרונה שנשלחה לאזור זה.';$('scr-extra').innerHTML=`<div class="rec-card">נציגות המשפחה שלום רב. הניידת של טהרת המשפחה תעבור השבוע בשכונות האזור. את התחנות והזמנים המדויקים ניתן לשמוע בקו המידע 083011900. בניידת הקרובה יחולק סט מדבקות מרהיב. בברכה ותודה על שיתוף הפעולה, הנהלת פרוייקט המשפחה.</div>`;
   drawKeypad({'0':node});addStep('▶ משמיע הודעת אזור','','ok');}
 function showStation(ctx,d){$('scr-ctx').textContent='תחנת איסוף';
   $('scr-says').innerHTML='פרטי התחנה הקבועה של הניידת:';$('scr-extra').innerHTML=`<div class="rec-card">${STATIONS[d]||'אין מידע לתחנה זו.'}</div>`;
@@ -477,7 +477,7 @@ const STAT={done:'הסתיים',scheduled:'מתוזמן',draft:'טיוטה',runn
 
 const LINES=[
   {id:'b',num:'0772222200',name:'קו המידע הארצי',role:'מידע · 24,608 מנויים',units:1396,callerIds:['0772222200'],
-   campaigns:[{id:1,name:'עדכון כללי למנויי הקו',type:'קולי',n:24608,blocked:182,status:'draft',ctype:1}],
+   campaigns:[{id:1,name:'עדכון כללי למנויי הקו',type:'קולי',n:24608,blocked:182,status:'draft',ctype:1,msg:'משפחות יקרות שלום רב. פרטי כל המקוואות המפוקחים על ידי טהרת המשפחה — שעות הפתיחה ופרטי הבלניות — זמינים בקו המידע: אִמרו את שם העיר, והמערכת תשמיע את הפרטים המלאים. בברכה, הנהלת פרוייקט המשפחה.'}],
    lists:[{name:'מנויים שנרשמו לקו',count:24608,zones:['כל הארץ']}],
    tree:[
      {t:'חיפוש מקווה / מענה רבני',type:'תפריט',children:[
@@ -505,7 +505,7 @@ const LINES=[
      {t:'הסרה מהרשימה',type:'הסרה מרשימה'},
      {t:'זמנים הלכתיים (שקיעה / עומר)',type:'זמנים הלכתיים'}]},
   {id:'a',num:'083011900',name:'קו האיסוף והקמפיינים',role:'קמפיינים + איסוף',units:198333,callerIds:['083011900'],
-   campaigns:[{id:50,name:'מודיעין עלית ערב שבת',type:'קולי',n:432,blocked:6,status:'done',ctype:1},
+   campaigns:[{id:50,name:'מודיעין עלית ערב שבת',type:'קולי',n:432,blocked:6,status:'done',ctype:1,msg:'נציגות המשפחה במודיעין עילית שלום רב. הניידת של טהרת המשפחה תעבור השבוע בשכונות קרית ספר וברכפלד. את התחנות והזמנים המדויקים ניתן לשמוע בקו המידע 083011900. בניידת הקרובה יחולק סט מדבקות מרהיב, וכן מתנת ימי ההולדת לחודשי תמוז ואב. בברכה ותודה על שיתוף הפעולה, הנהלת פרוייקט המשפחה.'},
      {id:51,name:'ערב שבת אזור חיוג 02',type:'קולי',n:1197,blocked:52,status:'scheduled',ctype:1},
      {id:52,name:'תזכורת איסוף ביתר',type:'צינתוק',n:509,blocked:8,status:'draft',ctype:0}],
    lists:[{name:'מודיעין עילית',count:439,zones:['קרית ספר','ברכפלד']},
@@ -653,7 +653,7 @@ function setMsg(m){msgMode=m;renderMsg();}
 function renderMsg(){
   $('msg-body').innerHTML = msgMode==='file'
     ? `<input type="file" accept="audio/*"><div class="muted-note">פורמטים: MP3/WAV/OGG. אורך טיפוסי ~43 שניות.</div>`
-    : `<textarea id="tts-text" class="ta" placeholder="כתוב כאן את ההודעה, והמערכת תהפוך אותה לקול..."></textarea>
+    : `<textarea id="tts-text" class="ta" placeholder="כתוב כאן את ההודעה, והמערכת תהפוך אותה לקול...">${(editCamp&&editCamp.msg)||''}</textarea>
        <label>בחירת קול</label><select id="tts-voice">${VOICES.map(v=>`<option>${v}</option>`).join('')}</select>
        <div class="send-row" style="margin-top:8px"><button class="btn sm" type="button" onclick="ttsPreview()">🔊 האזן לדוגמה</button><span id="tts-note" class="muted-note"></span></div>`;
 }
