@@ -312,6 +312,10 @@ function startCall(){const line=$('line-pick').value;phoneLine=line;calling=true
 function endCall(){calling=false;node='idle';if(steps.length)addStep('השיחה נותקה.','caller','warn');renderScreen();}
 function press(d){
   if(!calling)return;
+  // זרימת המקוואות (חיפוש → רשימה → פרטים → שעות)
+  if(node==='mikList'){if(d==='0')return mikvehSearch();const i=+d-1;if(mikMatches[i]){addStep(`הקיש ${d}`,'caller');mikDetail(i);}return;}
+  if(node==='mikDetail'){addStep(`הקיש ${d}`,'caller');return mikDetailPick(d);}
+  if(node==='mikHours'){addStep(`הקיש ${d}`,'caller');return mikHoursPick(d);}
   const n=TREE[node];
   if(!n){ if(d==='0'){addStep('הקיש 0','caller');goto(phoneLine);} return; }  // חזרה ממסך פעולה
   if(!n.keys[d])return;
@@ -340,29 +344,56 @@ function showStation(ctx,d){$('scr-ctx').textContent='תחנת איסוף';
   drawKeypad({'0':node});addStep('משמיע פרטי תחנת איסוף','','ok');}
 
 /* --- שלוחות "פעולה" --- */
+let mikMatches=[],mikSel=null;
 function mikvehSearch(){
   node='mikveh';$('scr-ctx').textContent='חיפוש מקווה בדיבור';
-  $('scr-says').innerHTML='אמור/הקלד <b>שם מקווה או עיר</b>, והמערכת תזהה ותקריא את הפרטים.';
-  $('scr-extra').innerHTML=`<div class="field"><input id="mik-in" placeholder="למשל: הר נוף / בית שמש / גב&quot;ש" onkeydown="if(event.key==='Enter')runMik()"><button class="go" onclick="runMik()">חפש</button></div>`;
-  drawKeypad({'0':'main'});addStep('המערכת: "אמור שם מקווה או עיר"');setTimeout(()=>$('mik-in')?.focus(),50);
+  $('scr-says').innerHTML='אמור/הקלד <b>שם עיר</b> (או מקווה), והמערכת תחפש ברשימת המקוואות המפוקחים.';
+  $('scr-extra').innerHTML=`<div class="field"><input id="mik-in" placeholder="למשל: ירושלים / בית שמש / הר נוף" onkeydown="if(event.key==='Enter')runMik()"><button class="go" onclick="runMik()">חפש</button></div>`;
+  drawKeypad({'0':'main'});addStep('המערכת: "אמור שם עיר או מקווה"');setTimeout(()=>$('mik-in')?.focus(),50);
 }
 function runMik(){
   const q=$('mik-in').value.trim();if(!q)return;
   addStep(`אמר: "${q}"`,'caller');
-  const {m,score}=bestMikveh(q);
-  if(!m){addStep(`לא זוהתה התאמה (דמיון ${(score*100|0)}%) → מעבר למענה רבנים.`,'','warn');
-    $('scr-ctx').textContent='מענה רבנים';$('scr-says').innerHTML='לא נמצא מקווה תואם. מעביר אותך למענה רבני…';$('scr-extra').innerHTML=rabbiBox();return;}
-  addStep(`זוהה: <b>${m.name}</b> (דמיון ${(score*100|0)}%) — מקריא רשומה.`,'','ok');
-  $('scr-ctx').textContent='פרטי המקווה';$('scr-says').innerHTML=`נמצא: <b>${m.name}</b>`;
-  const hours = (new Date().getDay()===5)?('ערב שבת: '+m.hes):('קיץ: '+m.hs);
-  $('scr-extra').innerHTML=`<div class="rec-card">
-    <div class="rn">${m.name}</div>
-    ${row('עיר',m.city)}${row('מועצה',m.council)}${row('כתובת',m.address)}
-    ${row('טלפון',m.phone)}${m.phone_alt?row('נוסף',m.phone_alt):''}
-    ${row('בלנית',m.balanit)}${row('שעות',hours)}
-    ${row('הנגשה',ACC[m.acc])}${row('פיקוח',SUP[m.sup])}
-    ${m.special?row('הודעה',m.special):''}
-  </div>`;
+  let matches=MIKVAOT.filter(m=>sim(q,m.city)>=0.7);   // חיפוש לפי עיר (say_all_data)
+  if(!matches.length){const {m}=bestMikveh(q);if(m)matches=[m];}
+  if(!matches.length){addStep('לא נמצאו מקוואות → מעבר למענה רבנים.','','warn');
+    $('scr-ctx').textContent='מענה רבנים';$('scr-says').innerHTML='לא נמצא מקווה תואם. מעביר למענה רבני…';$('scr-extra').innerHTML=rabbiBox();node='rabbi';drawKeypad({'0':'main'});return;}
+  mikMatches=matches;
+  if(matches.length===1){addStep('נמצא מקווה אחד','','ok');return mikShowList(true);}
+  addStep(`נמצאו ${matches.length} מקוואות → הקראת רשימה`,'','ok');mikShowList(false);
+}
+function mikShowList(single){
+  node='mikList';$('scr-ctx').textContent='רשימת מקוואות';
+  if(single){return mikDetail(0);}
+  $('scr-says').innerHTML=`נמצאו <b>${mikMatches.length}</b> מקוואות מפוקחים.<br>`+
+    mikMatches.map((m,i)=>`למקווה ב<b>${m.address}</b> — הקישו <b>${i+1}</b>`).join('<br>');
+  $('scr-extra').innerHTML='';const keys={'0':1};mikMatches.forEach((m,i)=>keys[String(i+1)]=1);drawKeypad(keys);
+}
+function mikDetail(i){
+  mikSel=mikMatches[i];node='mikDetail';$('scr-ctx').textContent='פרטי המקווה';
+  $('scr-says').innerHTML=`מקווה ב<b>${mikSel.address}</b> (${mikSel.city}).<br>לטלפון המקווה — <b>1</b> · לטלפון הבלנית — <b>2</b> · לשעות פתיחה — <b>3</b>. לחזרה — <b>0</b>.`;
+  $('scr-extra').innerHTML='';drawKeypad({'1':1,'2':1,'3':1,'0':1});
+}
+function mikDetailPick(d){
+  if(d==='0')return mikMatches.length>1?mikShowList(false):mikvehSearch();
+  const m=mikSel;
+  if(d==='1')mikInfo(m.phone,'טלפון המקווה');
+  else if(d==='2')mikInfo(m.phone_alt,'טלפון הבלנית');
+  else if(d==='3'){node='mikHours';$('scr-ctx').textContent='שעות פתיחה';
+    $('scr-says').innerHTML='לשעות פתיחה ב<b>קיץ</b> — <b>1</b> · ב<b>חורף</b> — <b>2</b>. לחזרה — <b>0</b>.';
+    $('scr-extra').innerHTML='';drawKeypad({'1':1,'2':1,'0':1});}
+}
+function mikInfo(val,label){
+  $('scr-extra').innerHTML=`<div class="rec-card">${val?`<b>${label}:</b> ${val}`:`<b style="color:#e6b86a">אין מידע</b> על ${label} במקווה זה.`}</div>`;
+  addStep(val?`▶ הקריא ${label}: ${val}`:`▶ "אין מידע על ${label}"`,'',val?'ok':'warn');
+  node='mikDetail';drawKeypad({'1':1,'2':1,'3':1,'0':1});
+}
+function mikHoursPick(d){
+  if(d==='0')return mikDetail(mikMatches.indexOf(mikSel));
+  const m=mikSel,val=d==='1'?m.hs:m.hw,season=d==='1'?'קיץ':'חורף';
+  $('scr-extra').innerHTML=`<div class="rec-card">${val?`<b>שעות פתיחה (${season}):</b> ${val}`:`<b style="color:#e6b86a">אין מידע</b> על שעות ${season}.`}</div>`;
+  addStep(val?`▶ הקריא שעות ${season}: ${val}`:`▶ "אין מידע על שעות ${season}"`,'',val?'ok':'warn');
+  drawKeypad({'1':1,'2':1,'0':1});
 }
 function row(k,v){return `<div class="row"><span class="k">${k}</span><span>${v}</span></div>`;}
 function rabbiBox(){
@@ -774,10 +805,15 @@ function settingsPanel(n,ps){const t=n.type;
     ${(n.rabbis||[]).map((r,j)=>`<tr><td class="mono">${r.phone}</td><td>${r.hours}</td><td><button class="nact" onclick="rabbiRm('${ps}',${j})">✕</button></td></tr>`).join('')||'<tr><td colspan="3" class="muted-note">לא הוגדרו רבנים</td></tr>'}</table>
     <div class="send-row" style="margin-top:8px"><input id="rp-${ps}" placeholder="טלפון" style="max-width:130px"><input id="rh-${ps}" placeholder="שעות (א׳-ה׳ 07:00-14:00)" style="max-width:210px"><button class="btn sm" onclick="rabbiAdd('${ps}')">הוסף רב</button></div>
     <label>מוזיקת המתנה</label><input value="${n.moh||'Tahara'}">`;
-  if(t==='השמעת רשימה')return `<h5>חיפוש מקוואות (say_all_data_from_list)</h5>
-    <label>חיפוש לפי</label><select><option>עיר / מקום</option><option>שם מקווה</option></select>
+  if(t==='השמעת רשימה')return `<h5>מקור הנתונים: רשימת המקוואות</h5>
+    <div class="muted-note">📥 כאן <b>מעלים ומעדכנים את הרשימה</b>, והמערכת <b>שואבת מכאן</b> — לא מקליטים כל מקווה בנפרד.</div>
+    <div class="send-row" style="margin-top:8px"><button class="btn sm">⬆ העלאת רשימה (Excel/CSV)</button><button class="btn sm" style="background:var(--muted)">+ הוסף מקווה</button><button class="btn sm" style="background:var(--muted)">ייבוא מימות</button></div>
+    <div style="overflow-x:auto;margin-top:10px"><table style="font-size:.82rem"><tr><th>עיר</th><th>כתובת</th><th>טלפון</th><th>בלנית</th><th>פיקוח</th><th>קיץ</th><th>חורף</th></tr>
+    ${MIKVAOT.slice(0,4).map(m=>`<tr><td>${m.city}</td><td>${m.address}</td><td class="mono">${m.phone}</td><td>${m.balanit}</td><td>${SUP[m.sup]}</td><td>${m.hs}</td><td>${m.hw}</td></tr>`).join('')}
+    <tr><td colspan="7" class="muted-note">…ועוד ${MIKVAOT.length-4} מקוואות · עמודות נוספות: מועצה · טלפון נוסף · ערב שבת · מוצ"ש · הערות</td></tr></table></div>
+    <label style="margin-top:10px">חיפוש לפי</label><select><option>עיר / מקום</option><option>שם מקווה</option></select>
     <label>מקסימום תוצאות</label><input type="number" value="30">
-    <div class="muted-note">מקור: רשימת המקוואות (ListAllData) — עמודות: מיקום · מועצה · כתובת · בלנית · טלפון · פיקוח · שעות (קיץ/חורף/ערב שבת/מוצ״ש) · הערות. אם "בפיקוח=לא" → ניתוב חלופי. בבחירה: הקראת שעות + אפשרות לקבל טלפון.</div>`;
+    <div class="muted-note">💡 ההקלטות ה<b>קבועות</b> ("נמצאו X", "לטלפון המקווה"...) מוקלטות פעם אחת. ה<b>נתונים המשתנים</b> (טלפון/שעות של כל מקווה) נקראים אוטומטית (TTS) מהטבלה. אם "פיקוח=לא" → ניתוב חלופי.</div>`;
   if(t==='סליקת אשראי')return `<h5>הגדרות סליקה</h5><label>חברת סליקה</label><input value="נדרים פלוס" readonly><label>מספר טרמינל</label><input placeholder="מספר הטרמינל שלכם">`;
   if(t==='זמנים הלכתיים')return `<h5>הגדרות זמנים</h5><label>מיקום</label><input value="ירושלים"><label>סוג</label><select><option>זמן שקיעה</option><option>ספירת העומר</option><option>צאת הכוכבים</option></select>`;
   if(t==='זיהוי דיבור')return `<h5>הגדרות זיהוי דיבור</h5><label>מקור הרשימה</label><select><option>רשימת המקוואות</option><option>רשימת ערים</option></select><div class="muted-note">התאמה מטושטשת + שדרוג AI.</div>`;
