@@ -654,31 +654,36 @@ function renderMsg(){
   $('msg-body').innerHTML = msgMode==='file'
     ? `<input type="file" accept="audio/*"><div class="muted-note">פורמטים: MP3/WAV/OGG. אורך טיפוסי ~43 שניות.</div>`
     : `<textarea id="tts-text" class="ta" placeholder="כתוב כאן את ההודעה, והמערכת תהפוך אותה לקול...">${(editCamp&&editCamp.msg)||''}</textarea>
-       <label>בחירת קול</label><select id="tts-voice">${VOICES.map(v=>`<option>${v}</option>`).join('')}</select>
+       <label>בחירת קול</label><select id="tts-voice">${voiceOptions()}</select>
        <div class="send-row" style="margin-top:8px"><button class="btn sm" type="button" onclick="ttsPreview()">🔊 האזן לדוגמה</button><span id="tts-note" class="muted-note"></span></div>`;
+}
+function voiceOptions(sel){
+  const vs=('speechSynthesis' in window)?window.speechSynthesis.getVoices():[];
+  const he=vs.filter(v=>/he|iw/i.test(v.lang));
+  const list=he.length?he:vs;
+  if(!list.length)return VOICES.map(v=>`<option>${v}</option>`).join('');   // גיבוי אם עוד לא נטענו
+  return list.map(v=>`<option value="${v.name}"${v.name===sel?' selected':''}>${v.name}${/he|iw/i.test(v.lang)?'':' · '+v.lang}</option>`).join('');
 }
 function speak(text,voiceName,noteEl){
   if(!('speechSynthesis' in window)){if(noteEl)noteEl.textContent='(הדפדפן לא תומך בהשמעה — יושמע בבנייה עם מנוע TTS)';return;}
   const synth=window.speechSynthesis;
   try{synth.cancel();}catch(e){}
-  const u=new SpeechSynthesisUtterance(text);u.lang='he-IL';u.rate=1;
-  const he=synth.getVoices().filter(v=>/he|iw/i.test(v.lang));
-  const wantFemale=/נשי/.test(voiceName||'');
-  const maleV=he.find(v=>/male|גבר/i.test(v.name));
-  // תמיד נבחר קול זמין (עברית אם יש) — כדי שלא יישאר שקט
-  if(he.length)u.voice=(wantFemale?(he.find(v=>/female|carmit|נשי/i.test(v.name))||he[0]):(maleV||he[0]));
+  const vs=synth.getVoices();
+  const u=new SpeechSynthesisUtterance(text);u.rate=1;
+  const chosen=vs.find(v=>v.name===voiceName);   // הקול המדויק שנבחר
+  if(chosen){u.voice=chosen;u.lang=chosen.lang;}
+  else{const he=vs.filter(v=>/he|iw/i.test(v.lang));if(he.length){u.voice=he[0];u.lang=he[0].lang;}else u.lang='he-IL';}
   if(noteEl){
     u.onstart=()=>noteEl.textContent='▶ משמיע…';
-    u.onend=()=>noteEl.textContent='✓ הושמע';
-    u.onerror=()=>noteEl.textContent='לא ניתן להשמיע במכשיר זה — במערכת האמיתית יהיה מנוע TTS מקצועי.';
-    if(!he.length)noteEl.textContent='ℹ אין קול עברית מותקן במכשיר — מושמע בקול ברירת מחדל.';
-    else if(!wantFemale&&!maleV)noteEl.textContent='ℹ אין קול גברי בעברית במכשיר — מושמע בקול הזמין. (במערכת האמיתית יהיו גם קול גבר וגם אישה.)';
+    u.onend=()=>noteEl.textContent='✓ הושמע'+(chosen?` — ${chosen.name}`:'');
+    u.onerror=()=>noteEl.textContent='לא ניתן להשמיע במכשיר זה.';
+    if(!vs.length)noteEl.textContent='ℹ הקולות עדיין נטענים — נסה שוב עוד רגע.';
   }
   synth.speak(u);
 }
 function ttsPreview(){const t=(($('tts-text')&&$('tts-text').value)||'').trim()||'שלום וברכה, כאן קו המידע של טהרת המשפחה. זוהי הודעת דוגמה.';
   speak(t,$('tts-voice').value,$('tts-note'));}
-if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();}
+if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>{const s=document.getElementById('tts-voice');if(s)s.innerHTML=voiceOptions(s.value);};}
 function setRec(t){recTab=t;renderRec();}
 function renderRec(){
   const l=L(),b=$('rec-body');
@@ -798,7 +803,7 @@ function treeMedia(ps,mode){const b=document.getElementById('mb-'+ps);
   if(mode==='rec')b.innerHTML='🔴 מקליט… (במערכת: הקלטה ישירה מהטלפון לשלוחה).';
   else if(mode==='up')b.innerHTML='<input type="file" accept="audio/*"><div class="muted-note">MP3 / WAV / OGG</div>';
   else b.innerHTML=`<textarea class="ta" id="tmt-${ps}" placeholder="כתוב טקסט וההמרה תהפוך אותו לקול..."></textarea>
-    <div class="send-row" style="margin-top:6px"><select id="tmv-${ps}">${VOICES.map(v=>`<option>${v}</option>`).join('')}</select>
+    <div class="send-row" style="margin-top:6px"><select id="tmv-${ps}">${voiceOptions()}</select>
     <button class="btn sm" onclick="treeTTS('${ps}')">🔊 האזן</button><span id="tmn-${ps}" class="muted-note"></span></div>`;}
 function treeTTS(ps){const t=(document.getElementById('tmt-'+ps).value||'').trim()||'הודעת דוגמה לשלוחה זו.';
   speak(t,document.getElementById('tmv-'+ps).value,document.getElementById('tmn-'+ps));}
