@@ -441,24 +441,38 @@ const CITIES={'מודיעין עילית':['קרית ספר','גרין פארק'
 const CAMP_TYPES=['השמעת הודעה בלבד','השמעה חוזרת (הקשה 1) + אישור קבלה (הקשה 7)',
   'שליחת ההודעה במייל (הקשה 1) + אישור (7)','השארת הודעה בתא קולי (הקשה 1)','ניתוב למענה אנושי (בתשלום נוסף)'];
 const VOICES=['קול נשי — שירה','קול גברי — אריאל','קול נשי — הדס','קול גברי — יוסף','קול נשי — טליה'];
-const EXT_TYPES=['תפריט','השמעת קבצים','שליחת הודעה קולית','ניתוב שיחה','תור','זיהוי דיבור','זמנים הלכתיים','סליקת אשראי','הסרה מרשימה','הרשמה לרשימה','חדר ועידה','כניסה לניהול'];
+const EXT_TYPES=['תפריט','השמעת קבצים','השמעת רשימה','שליחת הודעה קולית','ניתוב שיחה','תור','זיהוי דיבור','זמנים הלכתיים','סליקת אשראי','הסרה מרשימה','הרשמה לרשימה','חדר ועידה','כניסה לניהול'];
 const STAT={done:'הסתיים',scheduled:'מתוזמן',draft:'טיוטה',running:'פעיל'};
 
 const LINES=[
   {id:'b',num:'0772222200',name:'קו המידע הארצי',role:'מידע · 24,608 מנויים',units:1396,callerIds:['0772222200'],
    campaigns:[{id:1,name:'עדכון כללי למנויי הקו',type:'קולי',n:24608,blocked:182,status:'draft',ctype:1}],
    lists:[{name:'מנויים שנרשמו לקו',count:24608,zones:['כל הארץ']}],
-   tree:[{x:'1',t:'חיפוש מקווה / מענה רבני',type:'תפריט',d:0},
-     {x:'·',t:'זיהוי דיבור — הקראת רשומת מקווה',type:'זיהוי דיבור',d:1},
-     {x:'2',t:'מענה רבנים (תור + שעות)',type:'תור',d:1,phones:['02-5000000','052-7000000'],hours:'א׳-ה׳ 07:00-23:00',moh:'Tahara'},
-     {x:'2',t:'תרומות (נדרים פלוס)',type:'סליקת אשראי',d:0},
-     {x:'3',t:'שיעורים והרצאות',type:'תפריט',d:0},
-     {x:'4',t:'ימי עיון',type:'תפריט',d:0},
-     {x:'5',t:'מענה אנושי',type:'ניתוב שיחה',d:0,phones:['0527000000'],hours:'א׳-ה׳ 09:00-21:00',moh:'Tahara'},
-     {x:'6',t:'הרשמה לקו',type:'הרשמה לרשימה',d:0},
-     {x:'7',t:'השארת הודעה → מייל',type:'שליחת הודעה קולית',d:0},
-     {x:'8',t:'הסרה מהרשימה',type:'הסרה מרשימה',d:0},
-     {x:'9',t:'זמנים הלכתיים (שקיעה / עומר)',type:'זמנים הלכתיים',d:0}]},
+   tree:[
+     {t:'חיפוש מקווה / מענה רבני',type:'תפריט',children:[
+       {t:'מענה אוטומטי — חיפוש מקווה בדיבור',type:'השמעת רשימה'},
+       {t:'מענה על ידי רבנים',type:'תור',moh:'Tahara',rabbis:[
+         {phone:'050-0000001',hours:'א׳-ה׳ 07:00-14:00'},
+         {phone:'050-0000002',hours:'א׳-ה׳ 14:00-23:00'}]}]},
+     {t:'תרומות (נדרים פלוס)',type:'סליקת אשראי'},
+     {t:'שיעורים והרצאות',type:'תפריט',children:[
+       {t:'הרב ברוך רוזנבלום',type:'השמעת קבצים'},
+       {t:'הרב זמיר כהן',type:'השמעת קבצים'}]},
+     {t:'ימי עיון',type:'תפריט',children:[
+       {t:'ימי עיון לבלניות',type:'תפריט',children:[
+         {t:'תשפ"ד',type:'תפריט',children:[
+           {t:'הרב רוזנבלום',type:'השמעת קבצים'},
+           {t:'הרב זמיר כהן',type:'השמעת קבצים'}]},
+         {t:'תשפ"ה',type:'תפריט',children:[]}]},
+       {t:'ימי עיון וכנסים',type:'תפריט',children:[
+         {t:'תשפ"ב',type:'תפריט',children:[]},
+         {t:'תשפ"ג',type:'תפריט',children:[]},
+         {t:'תשפ"ד',type:'תפריט',children:[]}]}]},
+     {t:'מענה אנושי',type:'ניתוב שיחה',moh:'Tahara',rabbis:[{phone:'0527000000',hours:'א׳-ה׳ 09:00-21:00'}]},
+     {t:'הרשמה לקו',type:'הרשמה לרשימה'},
+     {t:'השארת הודעה → מייל',type:'שליחת הודעה קולית'},
+     {t:'הסרה מהרשימה',type:'הסרה מרשימה'},
+     {t:'זמנים הלכתיים (שקיעה / עומר)',type:'זמנים הלכתיים'}]},
   {id:'a',num:'083011900',name:'קו האיסוף והקמפיינים',role:'קמפיינים + איסוף',units:198333,callerIds:['083011900'],
    campaigns:[{id:50,name:'מודיעין עלית ערב שבת',type:'קולי',n:432,blocked:6,status:'done',ctype:1},
      {id:51,name:'ערב שבת אזור חיוג 02',type:'קולי',n:1197,blocked:52,status:'scheduled',ctype:1},
@@ -466,16 +480,30 @@ const LINES=[
    lists:[{name:'מודיעין עילית',count:439,zones:['קרית ספר','ברכפלד']},
      {name:'אזור חיוג 02',count:1441,zones:['רמות','הר נוף','בית וגן']},
      {name:'אזור חיוג 08',count:509,zones:['בית שמש']}],
-   tree:[{x:'1',t:'הודעות שנשלחו (לפי אזור)',type:'תפריט',d:0},
-     {x:'2',t:'תחנות איסוף (עיר → שכונה)',type:'תפריט',d:0},
-     {x:'3',t:'השארת הודעה → מייל',type:'שליחת הודעה קולית',d:0}]},
+   tree:[
+     {t:'הודעות שנשלחו',type:'תפריט',children:[
+       {t:'מודיעין עילית',type:'השמעת קבצים'},
+       {t:'בית שמש',type:'השמעת קבצים'},
+       {t:'ירושלים',type:'תפריט',children:[
+         {t:'רמות',type:'השמעת קבצים'},
+         {t:'גבעת שאול / הר נוף',type:'השמעת קבצים'},
+         {t:'בית וגן',type:'השמעת קבצים'},
+         {t:'רמת שלמה',type:'השמעת קבצים'}]},
+       {t:'ביתר',type:'השמעת קבצים'}]},
+     {t:'תחנות איסוף',type:'תפריט',children:[
+       {t:'מודיעין עילית',type:'השמעת קבצים'},
+       {t:'ירושלים',type:'תפריט',children:[
+         {t:'רמות',type:'השמעת קבצים'},
+         {t:'גב"ש / הר נוף',type:'השמעת קבצים'},
+         {t:'בית וגן',type:'השמעת קבצים'}]},
+       {t:'בית שמש',type:'השמעת קבצים'}]},
+     {t:'השארת הודעה → מייל',type:'שליחת הודעה קולית'}]},
   {id:'c',num:'049096652',name:'קו 04',role:'טרם הוגדר — לפרט',units:520,callerIds:['049096652'],
-   campaigns:[],lists:[],tree:[{x:'—',t:'הקו טרם הוגדר — נגדיר לפי הצורך',type:'תפריט',d:0}]},
+   campaigns:[],lists:[],tree:[{t:'הקו טרם הוגדר — נגדיר לפי הצורך',type:'תפריט',children:[]}]},
   {id:'d',num:'0799334000',name:'קו 079',role:'טרם הוגדר — לפרט',units:880,callerIds:['0799334000'],
-   campaigns:[],lists:[],tree:[{x:'—',t:'הקו טרם הוגדר — נגדיר לפי הצורך',type:'תפריט',d:0}]},
+   campaigns:[],lists:[],tree:[{t:'הקו טרם הוגדר — נגדיר לפי הצורך',type:'תפריט',children:[]}]},
 ];
-
-let curLine=null,lineTab='camp',editCamp=undefined,recTab='list',msgMode='file',indivNums=[],treeOpen=-1,treeOpenPanel=null;
+let curLine=null,lineTab='camp',editCamp=undefined,recTab='list',msgMode='file',indivNums=[],treeOpenPath=null,treeOpenPanel=null;
 function L(){return LINES.find(l=>l.id===curLine);}
 
 function setMode(m){
@@ -497,9 +525,9 @@ function renderLineList(){
      <div class="rl" style="color:var(--accent-strong);font-weight:700">${l.units.toLocaleString()} יחידות</div>
      <span class="go">כניסה לניהול ←</span></button>`).join('')}</div>`;
 }
-function enterLine(id){curLine=id;lineTab='camp';editCamp=undefined;treeOpen=-1;renderLine();}
+function enterLine(id){curLine=id;lineTab='camp';editCamp=undefined;treeOpenPath=null;renderLine();}
 function exitLine(){curLine=null;renderPanel();}
-function setTab(t){lineTab=t;editCamp=undefined;treeOpen=-1;renderLine();}
+function setTab(t){lineTab=t;editCamp=undefined;treeOpenPath=null;renderLine();}
 function renderLine(){
   const l=L();
   const tabs=[['camp','שיגור הודעות'],['content','מערכת תוכן'],['lists','רשימות תפוצה'],['inbound','שיחות נכנסות'],['settings','הגדרות הקו']];
@@ -681,75 +709,84 @@ function runDelivery(id){
   tick();
 }
 
-/* --- מערכת תוכן — עורך עץ שלוחות אינטראקטיבי --- */
+/* --- מערכת תוכן — עורך עץ מקונן עם מספור אוטומטי --- */
 function renderContent(el){
   const l=L();
   el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
-    <h3 style="margin:0">מערכת תוכן — עץ השלוחות</h3><button class="btn sm" onclick="treeAdd(-1)">+ הוסף שלוחה בראש</button></div>
-    <p class="muted-note">לכל שלוחה: מדיה (🎙 הקלטה / ⬆ קובץ / ✍ טקסט→קול) · סוג · ⚙ הגדרות · הזזה/עריכה/מחיקה. משתנה מקו לקו.</p>
-    <div class="tree" style="margin-top:12px" id="treec">${l.tree.map((n,i)=>nodeRow(n,i)).join('')}</div>`;
+    <h3 style="margin:0">מערכת תוכן — עץ השלוחות</h3><button class="btn sm" onclick="treeAddRoot()">+ הוסף שלוחה ראשית</button></div>
+    <p class="muted-note">📌 <b>מספור אוטומטי</b>: כל שלוחה מקבלת מספר לפי מיקומה תחת ההורה — אתה כותב רק את השם. סוג <b>תפריט</b> יכול להכיל שלוחות-משנה (＋בן). "השמעת קבצים" = כאן נכנסת ההקלטה.</p>
+    <div class="tree" style="margin-top:12px" id="treec">${renderTreeNodes(l.tree,0,[])}</div>`;
 }
 function refreshTree(){renderContent($('tabc'));}
-function nodeRow(n,i){
-  const open=treeOpen===i;
-  return `<div class="node-wrap" style="margin-inline-start:${(n.d||0)*20}px">
-    <div class="node">
-      <span class="ext" contenteditable onblur="treeSet(${i},'x',this.textContent)">${n.x}</span>
-      <span class="desc" contenteditable onblur="treeSet(${i},'t',this.textContent)">${n.t}</span>
-      <select onchange="treeSetType(${i},this.value)">${EXT_TYPES.map(t=>`<option ${t===n.type?'selected':''}>${t}</option>`).join('')}</select>
-      <button class="nact" title="מדיה (הקלטה/קובץ/טקסט)" onclick="treePanel(${i},'media')">🎙</button>
-      <button class="nact" title="הגדרות לפי סוג" onclick="treePanel(${i},'settings')">⚙</button>
-      <button class="nact" title="הזז למעלה" onclick="treeMove(${i},-1)">↑</button>
-      <button class="nact" title="הזז למטה" onclick="treeMove(${i},1)">↓</button>
-      <button class="nact" title="הוסף שלוחה אחרי" onclick="treeAdd(${i})">＋</button>
-      <button class="nact" title="מחק שלוחה" onclick="treeDel(${i})">🗑</button>
-    </div>
-    ${open?`<div class="node-panel">${treeOpenPanel==='media'?mediaPanel(i):settingsPanel(n,i)}</div>`:''}
-  </div>`;
+function renderTreeNodes(nodes,depth,parentPath){
+  return nodes.map((n,i)=>{
+    const path=[...parentPath,i], ps=path.join('.'), num=i+1;
+    const open=treeOpenPath===ps, isMenu=n.type==='תפריט';
+    let h=`<div class="node-wrap" style="margin-inline-start:${depth*22}px">
+      <div class="node">
+        <span class="ext" title="מספר אוטומטי">${num}</span>
+        <span class="desc" contenteditable onblur="treeRename('${ps}',this.textContent)">${n.t}</span>
+        <select onchange="treeType('${ps}',this.value)">${EXT_TYPES.map(t=>`<option ${t===n.type?'selected':''}>${t}</option>`).join('')}</select>
+        <button class="nact" title="מדיה (הקלטה/קובץ/טקסט)" onclick="treePanel('${ps}','media')">🎙</button>
+        <button class="nact" title="הגדרות לפי סוג" onclick="treePanel('${ps}','settings')">⚙</button>
+        <button class="nact" title="הזז למעלה" onclick="treeMove('${ps}',-1)">↑</button>
+        <button class="nact" title="הזז למטה" onclick="treeMove('${ps}',1)">↓</button>
+        ${isMenu?`<button class="nact" title="הוסף שלוחת-משנה" onclick="treeAddChild('${ps}')">＋בן</button>`:''}
+        <button class="nact" title="הוסף שלוחה אחרי (אותה רמה)" onclick="treeAddSibling('${ps}')">＋</button>
+        <button class="nact" title="מחק" onclick="treeDel('${ps}')">🗑</button>
+      </div>
+      ${open?`<div class="node-panel">${treeOpenPanel==='media'?mediaPanel(ps):settingsPanel(n,ps)}</div>`:''}
+    </div>`;
+    if(n.children&&n.children.length)h+=renderTreeNodes(n.children,depth+1,path);
+    return h;
+  }).join('');
 }
-function treeSet(i,k,v){L().tree[i][k]=(''+v).trim();}
-function treeSetType(i,v){L().tree[i].type=v;refreshTree();}
-function treePanel(i,p){if(treeOpen===i&&treeOpenPanel===p){treeOpen=-1;treeOpenPanel=null;}else{treeOpen=i;treeOpenPanel=p;}refreshTree();}
-function treeMove(i,d){const t=L().tree,j=i+d;if(j<0||j>=t.length)return;[t[i],t[j]]=[t[j],t[i]];treeOpen=-1;refreshTree();}
-function treeDel(i){if(confirm('למחוק את השלוחה?')){L().tree.splice(i,1);treeOpen=-1;refreshTree();}}
-function treeAdd(i){L().tree.splice(i+1,0,{x:'חדש',t:'שלוחה חדשה',type:'תפריט',d:0});treeOpen=i+1;treeOpenPanel='settings';refreshTree();}
+function nodeAt(ps){const idx=ps.split('.').map(Number);let arr=L().tree,n=null;for(const i of idx){n=arr[i];arr=n.children||[];}return n;}
+function parentArr(ps){const idx=ps.split('.').map(Number),last=idx.pop();let arr=L().tree;for(const i of idx)arr=arr[i].children;return {arr,last};}
+function newNode(){return {t:'שלוחה חדשה',type:'השמעת קבצים'};}
+function treeRename(ps,v){nodeAt(ps).t=(''+v).trim();}
+function treeType(ps,v){const n=nodeAt(ps);n.type=v;if(v==='תפריט'&&!n.children)n.children=[];refreshTree();}
+function treePanel(ps,p){if(treeOpenPath===ps&&treeOpenPanel===p){treeOpenPath=null;treeOpenPanel=null;}else{treeOpenPath=ps;treeOpenPanel=p;}refreshTree();}
+function treeMove(ps,d){const {arr,last}=parentArr(ps),j=last+d;if(j<0||j>=arr.length)return;[arr[last],arr[j]]=[arr[j],arr[last]];treeOpenPath=null;refreshTree();}
+function treeDel(ps){if(confirm('למחוק את השלוחה וכל תת-השלוחות?')){const {arr,last}=parentArr(ps);arr.splice(last,1);treeOpenPath=null;refreshTree();}}
+function treeAddSibling(ps){const {arr,last}=parentArr(ps);arr.splice(last+1,0,newNode());treeOpenPath=null;refreshTree();}
+function treeAddChild(ps){const n=nodeAt(ps);(n.children=n.children||[]).push(newNode());treeOpenPath=ps;treeOpenPanel=null;refreshTree();}
+function treeAddRoot(){L().tree.push(newNode());refreshTree();}
 /* מדיה */
-function mediaPanel(i){return `<div class="subtabs">
-    <button onclick="treeMedia(${i},'rec')">🎙 הקלטה בטלפון</button>
-    <button onclick="treeMedia(${i},'up')">⬆ העלאת קובץ</button>
-    <button onclick="treeMedia(${i},'tts')">✍ טקסט → קול</button>
-  </div><div id="mb-${i}" class="muted-note">בחר אופן יצירת ההקלטה לשלוחה זו.</div>`;}
-function treeMedia(i,mode){const b=document.getElementById('mb-'+i);
+function mediaPanel(ps){return `<div class="subtabs">
+    <button onclick="treeMedia('${ps}','rec')">🎙 הקלטה בטלפון</button>
+    <button onclick="treeMedia('${ps}','up')">⬆ העלאת קובץ</button>
+    <button onclick="treeMedia('${ps}','tts')">✍ טקסט → קול</button>
+  </div><div id="mb-${ps}" class="muted-note">בחר אופן יצירת ההקלטה לשלוחה זו.</div>`;}
+function treeMedia(ps,mode){const b=document.getElementById('mb-'+ps);
   if(mode==='rec')b.innerHTML='🔴 מקליט… (במערכת: הקלטה ישירה מהטלפון לשלוחה).';
   else if(mode==='up')b.innerHTML='<input type="file" accept="audio/*"><div class="muted-note">MP3 / WAV / OGG</div>';
-  else b.innerHTML=`<textarea class="ta" id="tmt-${i}" placeholder="כתוב טקסט וההמרה תהפוך אותו לקול..."></textarea>
-    <div class="send-row" style="margin-top:6px"><select id="tmv-${i}">${VOICES.map(v=>`<option>${v}</option>`).join('')}</select>
-    <button class="btn sm" onclick="treeTTS(${i})">🔊 האזן</button><span id="tmn-${i}" class="muted-note"></span></div>`;}
-function treeTTS(i){const t=(document.getElementById('tmt-'+i).value||'').trim()||'הודעת דוגמה לשלוחה זו.';
-  speak(t,document.getElementById('tmv-'+i).value,document.getElementById('tmn-'+i));}
+  else b.innerHTML=`<textarea class="ta" id="tmt-${ps}" placeholder="כתוב טקסט וההמרה תהפוך אותו לקול..."></textarea>
+    <div class="send-row" style="margin-top:6px"><select id="tmv-${ps}">${VOICES.map(v=>`<option>${v}</option>`).join('')}</select>
+    <button class="btn sm" onclick="treeTTS('${ps}')">🔊 האזן</button><span id="tmn-${ps}" class="muted-note"></span></div>`;}
+function treeTTS(ps){const t=(document.getElementById('tmt-'+ps).value||'').trim()||'הודעת דוגמה לשלוחה זו.';
+  speak(t,document.getElementById('tmv-'+ps).value,document.getElementById('tmn-'+ps));}
 /* הגדרות לפי סוג */
-function settingsPanel(n,i){const t=n.type;
-  if(t==='תור'||t==='ניתוב שיחה')return `<h5>הגדרות ${t}</h5>
-    <label>מספרי טלפון ליעד (רבנים / נציגים)</label>
-    <div class="send-row"><input id="ph-${i}" placeholder="מספר טלפון" style="max-width:170px"><button class="btn sm" onclick="treeAddPhone(${i})">הוסף</button></div>
-    <div class="chips" id="phc-${i}">${(n.phones||[]).map((p,j)=>`<span class="chip">${p}<button onclick="treeRmPhone(${i},${j})">✕</button></span>`).join('')||'<span class="muted-note">לא הוגדרו מספרים</span>'}</div>
-    <label>שעות פעילות</label><input value="${n.hours||'א׳-ה׳ 07:00-23:00'}" onblur="treeSet(${i},'hours',this.value)">
-    <label>מוזיקת המתנה</label><input value="${n.moh||'Tahara'}" onblur="treeSet(${i},'moh',this.value)">`;
-  if(t==='סליקת אשראי')return `<h5>הגדרות סליקה</h5>
-    <label>חברת סליקה</label><input value="נדרים פלוס" readonly>
-    <label>מספר טרמינל</label><input placeholder="מספר הטרמינל שלכם">`;
-  if(t==='זמנים הלכתיים')return `<h5>הגדרות זמנים</h5>
-    <label>מיקום</label><input value="ירושלים">
-    <label>סוג</label><select><option>זמן שקיעה</option><option>ספירת העומר</option><option>צאת הכוכבים</option></select>`;
-  if(t==='זיהוי דיבור')return `<h5>הגדרות זיהוי דיבור</h5>
-    <label>מקור הרשימה</label><select><option>רשימת המקוואות</option><option>רשימת ערים</option></select>
-    <div class="muted-note">התאמה מטושטשת + שדרוג AI. מה שלא זוהה → מנותב לרבנים.</div>`;
-  if(t==='השמעת קבצים')return `<div class="muted-note">שלוחה זו משמיעה את קובצי המדיה שלה (כפתור 🎙). ניתן להעלות מספר קבצים.</div>`;
-  if(t==='תפריט')return `<div class="muted-note">תפריט ניתוב — הוסף תחתיו שלוחות-משנה (כפתור ＋ ליד השלוחה).</div>`;
-  return `<div class="muted-note">אין הגדרות מיוחדות לסוג "${t}".</div>`;
-}
-function treeAddPhone(i){const v=$('ph-'+i).value.trim();if(!v)return;(L().tree[i].phones=L().tree[i].phones||[]).push(v);treeOpen=i;treeOpenPanel='settings';refreshTree();}
-function treeRmPhone(i,j){L().tree[i].phones.splice(j,1);treeOpen=i;treeOpenPanel='settings';refreshTree();}
+function settingsPanel(n,ps){const t=n.type;
+  if(t==='תור'||t==='ניתוב שיחה')return `<h5>ניתוב לרבנים לפי שעות (תור + רוטציה)</h5>
+    <div class="muted-note">כל רב מקבל את השיחה בשעות שלו. אם כמה באותן שעות — עובר מאחד לשני עד מענה.</div>
+    <table style="margin-top:8px"><tr><th>טלפון הרב</th><th>שעות</th><th></th></tr>
+    ${(n.rabbis||[]).map((r,j)=>`<tr><td class="mono">${r.phone}</td><td>${r.hours}</td><td><button class="nact" onclick="rabbiRm('${ps}',${j})">✕</button></td></tr>`).join('')||'<tr><td colspan="3" class="muted-note">לא הוגדרו רבנים</td></tr>'}</table>
+    <div class="send-row" style="margin-top:8px"><input id="rp-${ps}" placeholder="טלפון" style="max-width:130px"><input id="rh-${ps}" placeholder="שעות (א׳-ה׳ 07:00-14:00)" style="max-width:210px"><button class="btn sm" onclick="rabbiAdd('${ps}')">הוסף רב</button></div>
+    <label>מוזיקת המתנה</label><input value="${n.moh||'Tahara'}">`;
+  if(t==='השמעת רשימה')return `<h5>חיפוש מקוואות (say_all_data_from_list)</h5>
+    <label>חיפוש לפי</label><select><option>עיר / מקום</option><option>שם מקווה</option></select>
+    <label>מקסימום תוצאות</label><input type="number" value="30">
+    <div class="muted-note">מקור: רשימת המקוואות (ListAllData) — עמודות: מיקום · מועצה · כתובת · בלנית · טלפון · פיקוח · שעות (קיץ/חורף/ערב שבת/מוצ״ש) · הערות. אם "בפיקוח=לא" → ניתוב חלופי. בבחירה: הקראת שעות + אפשרות לקבל טלפון.</div>`;
+  if(t==='סליקת אשראי')return `<h5>הגדרות סליקה</h5><label>חברת סליקה</label><input value="נדרים פלוס" readonly><label>מספר טרמינל</label><input placeholder="מספר הטרמינל שלכם">`;
+  if(t==='זמנים הלכתיים')return `<h5>הגדרות זמנים</h5><label>מיקום</label><input value="ירושלים"><label>סוג</label><select><option>זמן שקיעה</option><option>ספירת העומר</option><option>צאת הכוכבים</option></select>`;
+  if(t==='זיהוי דיבור')return `<h5>הגדרות זיהוי דיבור</h5><label>מקור הרשימה</label><select><option>רשימת המקוואות</option><option>רשימת ערים</option></select><div class="muted-note">התאמה מטושטשת + שדרוג AI.</div>`;
+  if(t==='השמעת קבצים')return `<div class="muted-note">כאן נכנסת ההקלטה (כפתור 🎙). זו שלוחת-הקצה שמשמיעה את השיעור/המידע.</div>`;
+  if(t==='תפריט')return `<div class="muted-note">תפריט ניתוב. הוסף תחתיו שלוחות-משנה (＋בן) — הן ימוספרו אוטומטית 1, 2, 3...</div>`;
+  return `<div class="muted-note">אין הגדרות מיוחדות לסוג "${t}".</div>`;}
+function rabbiAdd(ps){const p=$('rp-'+ps).value.trim(),h=$('rh-'+ps).value.trim();if(!p)return;
+  const n=nodeAt(ps);(n.rabbis=n.rabbis||[]).push({phone:p,hours:h||'א׳-ה׳ 07:00-23:00'});treeOpenPath=ps;treeOpenPanel='settings';refreshTree();}
+function rabbiRm(ps,j){nodeAt(ps).rabbis.splice(j,1);treeOpenPath=ps;treeOpenPanel='settings';refreshTree();}
 
 /* --- רשימות תפוצה --- */
 function renderLists(el){
