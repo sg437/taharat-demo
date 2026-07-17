@@ -570,7 +570,25 @@ function renderMsg(){
        <label>בחירת קול</label><select id="tts-voice">${VOICES.map(v=>`<option>${v}</option>`).join('')}</select>
        <div class="send-row" style="margin-top:8px"><button class="btn sm" type="button" onclick="ttsPreview()">🔊 האזן לדוגמה</button><span id="tts-note" class="muted-note"></span></div>`;
 }
-function ttsPreview(){$('tts-note').textContent=`▶ משמיע בקול "${$('tts-voice').value}" (הדגמה)`;}
+function ttsPreview(){
+  const note=$('tts-note');
+  const text=(($('tts-text')&&$('tts-text').value)||'').trim()||'שלום וברכה, כאן קו המידע של טהרת המשפחה. זוהי הודעת דוגמה.';
+  if(!('speechSynthesis' in window)){note.textContent='(הדפדפן לא תומך בהשמעה — יושמע בבנייה עם מנוע TTS)';return;}
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text); u.lang='he-IL'; u.rate=1;
+  const voices=window.speechSynthesis.getVoices();
+  const he=voices.filter(v=>/he|iw/i.test(v.lang));
+  const wantFemale=/נשי/.test($('tts-voice').value);
+  const pick=he.find(v=>wantFemale?/female|carmit|shira|hila|נשי/i.test(v.name):/male|גבר/i.test(v.name))||he[0];
+  if(pick)u.voice=pick;
+  u.onstart=()=>note.textContent='▶ משמיע…';
+  u.onend=()=>note.textContent=he.length?`✓ הושמע (${$('tts-voice').value})`:'✓ הושמע בקול ברירת מחדל (אין קול עברית מותקן במכשיר)';
+  u.onerror=()=>note.textContent='(לא נמצא קול להשמעה — בבנייה יושמע במנוע TTS)';
+  if(!he.length)note.textContent='מנגן… (אין קול עברית מותקן במכשיר — יישמע בקול ברירת מחדל)';
+  window.speechSynthesis.speak(u);
+}
+// טעינת רשימת הקולות מראש (חלק מהדפדפנים טוענים אותה אסינכרונית)
+if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();}
 function setRec(t){recTab=t;renderRec();}
 function renderRec(){
   const l=L(),b=$('rec-body');
