@@ -660,22 +660,28 @@ function renderMsg(){
 function voiceOptions(sel){
   const vs=('speechSynthesis' in window)?window.speechSynthesis.getVoices():[];
   const he=vs.filter(v=>/he|iw/i.test(v.lang));
-  const list=he.length?he:vs;
-  if(!list.length)return VOICES.map(v=>`<option>${v}</option>`).join('');   // גיבוי אם עוד לא נטענו
-  return list.map(v=>`<option value="${v.name}"${v.name===sel?' selected':''}>${v.name}${/he|iw/i.test(v.lang)?'':' · '+v.lang}</option>`).join('');
+  // אפשרויות מגדר ע"י גובה קול (עובד גם עם קול יחיד במכשיר)
+  let opts=`<option value="male"${sel==='male'?' selected':''}>🧔 קול גברי (עמוק)</option>`+
+           `<option value="female"${(!sel||sel==='female')?' selected':''}>👩 קול נשי</option>`;
+  (he.length?he:vs).forEach(v=>{opts+=`<option value="${v.name}"${v.name===sel?' selected':''}>${v.name}</option>`;});
+  return opts;
 }
 function speak(text,voiceName,noteEl){
   if(!('speechSynthesis' in window)){if(noteEl)noteEl.textContent='(הדפדפן לא תומך בהשמעה — יושמע בבנייה עם מנוע TTS)';return;}
   const synth=window.speechSynthesis;
   try{synth.cancel();}catch(e){}
   const vs=synth.getVoices();
+  const he=vs.filter(v=>/he|iw/i.test(v.lang));
   const u=new SpeechSynthesisUtterance(text);u.rate=1;
-  const chosen=vs.find(v=>v.name===voiceName);   // הקול המדויק שנבחר
-  if(chosen){u.voice=chosen;u.lang=chosen.lang;}
-  else{const he=vs.filter(v=>/he|iw/i.test(v.lang));if(he.length){u.voice=he[0];u.lang=he[0].lang;}else u.lang='he-IL';}
+  let base=he[0]||vs[0], pitch=1, simMale=false;
+  if(voiceName==='male'){pitch=0.5;simMale=true;}            // הנמכת גובה → צליל גברי
+  else if(voiceName==='female'){pitch=1.1;}
+  else{const c=vs.find(v=>v.name===voiceName);if(c)base=c;}
+  if(base){u.voice=base;u.lang=base.lang;}else u.lang='he-IL';
+  u.pitch=pitch;
   if(noteEl){
     u.onstart=()=>noteEl.textContent='▶ משמיע…';
-    u.onend=()=>noteEl.textContent='✓ הושמע'+(chosen?` — ${chosen.name}`:'');
+    u.onend=()=>noteEl.textContent=simMale?'✓ הושמע (קול גברי מדומה בהנמכה — במערכת האמיתית: קול גבר אמיתי)':'✓ הושמע';
     u.onerror=()=>noteEl.textContent='לא ניתן להשמיע במכשיר זה.';
     if(!vs.length)noteEl.textContent='ℹ הקולות עדיין נטענים — נסה שוב עוד רגע.';
   }
